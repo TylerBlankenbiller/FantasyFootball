@@ -57,3 +57,9 @@ players = players.groupby(['name', 'posteam']).sum()
 players = players.sort_values(['yards_gained'])
 #players = receiver.groupby(['name', 'posteam']).sum()
 print(players)
+
+players.to_csv('actual_2017_stats.csv')
+
+kicker = data
+kicker = kicker.loc[kicker['penalty'] == 0]
+kicker = kicker.loc[kicker['play_type'] == 'field_goal']
