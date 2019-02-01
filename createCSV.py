@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-data = pd.read_csv("reg_pbp_2017STATS.csv", low_memory=False)
+data = pd.read_csv("reg_pbp_2017.csv", low_memory=False)
 
 players = pd.DataFrame({'Name': ['Nan'], 'Pos': ['Nan'], 'Team': ['Nan'], 'Comp': [0], 'PAtt': [0], 'PYds': [0], 'PLong': [0], 'PTD': [0], 'Int': [0],
             'Sack': [0], 'Rate': [0], 'RYds': [0], 'RTD': [0], 'Fum': [0], 'Lst': [0], 'Rec': [0], 'Tgts': [0], 'RecYds': [0],
@@ -47,7 +47,7 @@ receiver['name'] = receiver['receiver_player_name']
 receiver['target'] = 1
 #receiver = receiver.groupby(['receiver_player_name', 'posteam']).sum()
 #receiver = receiver.sort_values(['yards_gained'])
-print(receiver)
+#print(receiver)
 
 
 
@@ -56,10 +56,21 @@ players = pd.concat([throw, run, receiver], axis=0, ignore_index=True, sort = Fa
 players = players.groupby(['name', 'posteam']).sum()
 players = players.sort_values(['yards_gained'])
 #players = receiver.groupby(['name', 'posteam']).sum()
-print(players)
+#print(players)
 
 players.to_csv('actual_2017_stats.csv')
 
 kicker = data
 kicker = kicker.loc[kicker['penalty'] == 0]
 kicker = kicker.loc[kicker['play_type'] == 'field_goal']
+kicker['short'] = 0
+kicker['med'] = 0
+kicker['long'] = 0
+kicker.loc[kicker.kick_distance <= 39, 'short'] += 1
+kicker.loc[(kicker.kick_distance > 39) & (kicker.kick_distance <= 49), 'med'] += 1
+kicker.loc[kicker.kick_distance >= 50, 'long'] += 1
+kicker = kicker.groupby(['kicker_player_name', 'posteam']).sum()
+kicker['fantasy'] = kicker['short']*3 + kicker['med']*4+ kicker['long']*5
+#- kickers.loc[kickers['field_goal_result'] == 'missed']
+
+kicker.to_csv('kicker_2017.csv')
