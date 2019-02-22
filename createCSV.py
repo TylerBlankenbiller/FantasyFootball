@@ -2,7 +2,33 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-data = pd.read_csv("reg_pbp_2017.csv", low_memory=False)
+def kicks(x):
+    d = {}
+    d['short'] = x['short'].sum()
+    d['med'] = x['med'].sum()
+    d['long'] = x['long'].sum()
+    d['longest'] = x['kick_distance'].max()
+    d['attempt'] = x['attempt'].sum()
+    d['PAT_Attempt'] = x['PAT_Attempt'].sum()
+    d['PAT_Made'] = x['PAT_Made'].sum() 
+    return pd.Series(d, index=['short', 'med', 'long', 'longest', 'attempt', 'PAT_Attempt', 'PAT_Made'])
+	
+def throws(x):
+    d = {}
+    d['COMP'] = x['completions'].sum()
+    d['ATT'] = x['tattempts'].sum()
+    d['PCT'] = x['completions'].sum() / x['tattempts'].sum()
+    d['YDS'] = x['yards_gained'].sum()
+    d['YDS/A'] = x['yards_gained'].sum() / x['tattempts'].sum()
+    d['Long'] = x['yards_gained'].max()
+    d['TD'] = x['touchdown'].sum()
+    d['INT'] = x['interception'].sum()
+    d['SACK'] = x['sack'].sum()
+    return pd.Series(d, index=['COMP', 'ATT', 'PCT', 'YDS', 'YDS/A', 'LONG', 'TD', 'INT', 'SACK'])
+    
+
+
+data = pd.read_csv("reg_pbp_2018.csv", low_memory=False)
 
 players = pd.DataFrame({'Name': ['Nan'], 'Pos': ['Nan'], 'Team': ['Nan'], 'Comp': [0], 'PAtt': [0], 'PYds': [0], 'PLong': [0], 'PTD': [0], 'Int': [0],
             'Sack': [0], 'Rate': [0], 'RYds': [0], 'RTD': [0], 'Fum': [0], 'Lst': [0], 'Rec': [0], 'Tgts': [0], 'RecYds': [0],
@@ -18,15 +44,15 @@ throw = data
 throw = throw.loc[throw['penalty'] == 0]
 throw = throw.loc[throw['play_type'] == 'pass']
 throw['tattempts'] = 1
-throw['player'] = throw['passer_player_name']
+#throw['player'] = throw['passer_player_name']
 throw['completions'] = throw['tattempts'] - throw['incomplete_pass']
-#throw = throw.groupby(['passer_player_id', 'posteam']).sum()
-throw['percent'] = throw['completions']/throw['tattempts']
-throw['y/att'] = throw['yards_gained']/throw['tattempts']
-#throw = throw.sort_values(['yards_gained'])
-throw['passYards'] = throw['yards_gained']
-#print(throw)
-#print(throw['sack'])
+throw = throw.groupby(['passer_player_name', 'posteam']).apply(throws)
+#throw['percent'] = throw['completions']/throw['tattempts']
+#throw['y/att'] = throw['yards_gained']/throw['tattempts']
+#throw['passYards'] = throw['yards_gained']
+
+throw.to_csv('qb_2018.csv')
+
 
 run = data
 run = run.loc[run['penalty'] == 0]
@@ -50,27 +76,25 @@ receiver['target'] = 1
 #print(receiver)
 
 
-
-
-players = pd.concat([throw, run, receiver], axis=0, ignore_index=True, sort = False)
-players = players.groupby(['name', 'posteam']).sum()
-players = players.sort_values(['yards_gained'])
-#players = receiver.groupby(['name', 'posteam']).sum()
-#print(players)
-
-players.to_csv('actual_2017_stats.csv')
-
 kicker = data
 kicker = kicker.loc[kicker['penalty'] == 0]
-kicker = kicker.loc[kicker['play_type'] == 'field_goal']
+kicker = kicker.loc[(kicker['play_type'] == 'field_goal') | (kicker.play_type == 'extra_point')]
+kicker['attempt'] = 0
 kicker['short'] = 0
 kicker['med'] = 0
 kicker['long'] = 0
-kicker.loc[kicker.kick_distance <= 39, 'short'] += 1
-kicker.loc[(kicker.kick_distance > 39) & (kicker.kick_distance <= 49), 'med'] += 1
-kicker.loc[kicker.kick_distance >= 50, 'long'] += 1
-kicker = kicker.groupby(['kicker_player_name', 'posteam']).sum()
-kicker['fantasy'] = kicker['short']*3 + kicker['med']*4+ kicker['long']*5
+kicker['PAT_Made'] = 0
+kicker['PAT_Attempt'] = 0
+kicker.loc[kicker.play_type == 'field_goal', 'attempt'] += 1
+kicker.loc[kicker.extra_point_attempt == 1, 'PAT_Attempt'] += 1
+kicker.loc[kicker.extra_point_result == 'good', 'PAT_Made'] += 1
+kicker.loc[(kicker.kick_distance <= 39) & (kicker.field_goal_result == 'made'), 'short'] += 1
+kicker.loc[(kicker.kick_distance > 39) & (kicker.kick_distance <= 49) & (kicker.field_goal_result == 'made'), 'med'] += 1
+kicker.loc[(kicker.kick_distance >= 50) & (kicker.field_goal_result == 'made'), 'long'] += 1
+kicker = kicker.groupby(['kicker_player_name', 'posteam']).apply(kicks)
+kicker['percent'] = (kicker['short']+kicker['med']+kicker['long'])/kicker['attempt']
+kicker['PAT_percent'] = (kicker['PAT_Made'])/kicker['PAT_Attempt']
+#kicker['fantasy'] = kicker['short']*4 + kicker['med']*5+ kicker['long']*6 + kicker['PAT_Made']*2 - kicker['PAT_Attempt'] - kicker['attempt']
 #- kickers.loc[kickers['field_goal_result'] == 'missed']
 
-kicker.to_csv('kicker_2017.csv')
+kicker.to_csv('kicker_2018.csv')
