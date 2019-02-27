@@ -24,7 +24,8 @@ def throws(x):
     d['TD'] = x['touchdown'].sum()
     d['INT'] = x['interception'].sum()
     d['SACK'] = x['sack'].sum()
-    return pd.Series(d, index=['COMP', 'ATT', 'PCT', 'YDS', 'YDS/A', 'LONG', 'TD', 'INT', 'SACK'])
+    d['POS'] = 'QB'
+    return pd.Series(d, index=['COMP', 'ATT', 'PCT', 'YDS', 'YDS/A', 'LONG', 'TD', 'INT', 'SACK', 'POS'])
     
 
 
@@ -46,7 +47,7 @@ throw = throw.loc[throw['play_type'] == 'pass']
 throw['tattempts'] = 1
 #throw['player'] = throw['passer_player_name']
 throw['completions'] = throw['tattempts'] - throw['incomplete_pass']
-throw = throw.groupby(['passer_player_name', 'posteam']).apply(throws)
+throw = throw.groupby(['passer_player_name', 'game_id', 'posteam']).apply(throws)
 #throw['percent'] = throw['completions']/throw['tattempts']
 #throw['y/att'] = throw['yards_gained']/throw['tattempts']
 #throw['passYards'] = throw['yards_gained']
