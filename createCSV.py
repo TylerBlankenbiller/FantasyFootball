@@ -15,6 +15,7 @@ def kicks(x):
 	
 def throws(x):
     d = {}
+    #d['PLAYER'] = x['name'].transform(lambda x: x)
     d['COMP'] = x['complete_pass'].sum()
     d['ATT'] = x['incomplete_pass'].sum() + x['complete_pass'].sum() + x['interception'].sum()
     d['YDS'] = x['yards_gained'].sum()
@@ -24,6 +25,10 @@ def throws(x):
     d['SACK'] = x['sack'].sum()
     d['POS'] = 'QB'
     return pd.Series(d, index=['COMP', 'ATT', 'YDS', 'LONG', 'TD', 'INT', 'SACK', 'POS'])
+
+def run(x):
+    d = {}
+    
     
 
 
@@ -43,8 +48,15 @@ throw = data.copy()
 #throw = throw.loc[throw['penalty'] == 0]
 throw = throw.loc[(throw['play_type'] == 'pass') | (throw['play_type'] == 'qb_spike')]
 throw.loc[throw.sack == 1, 'yards_gained'] = 0
+throw['name'] = throw['passer_player_name']
 throw = throw.groupby(['passer_player_name', 'game_id', 'posteam']).apply(throws)
 
+throw.to_csv('qb_2018.csv')
+throw = pd.read_csv('qb_2018.csv', low_memory=False)
+
+out = throw.to_json(orient='records')[1:-1].replace('},{', '} {')
+with open('qb2018.txt', 'w') as f:
+    f.write(out)
 throw.to_csv('qb_2018.csv')
 
 
