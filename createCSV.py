@@ -15,7 +15,6 @@ def kicks(x):
 	
 def throws(x):
     d = {}
-    #d['PLAYER'] = x['name'].transform(lambda x: x)
     d['COMP'] = x['complete_pass'].sum()
     d['ATT'] = x['incomplete_pass'].sum() + x['complete_pass'].sum() + x['interception'].sum()
     d['YDS'] = x['yards_gained'].sum()
@@ -26,9 +25,14 @@ def throws(x):
     d['POS'] = 'QB'
     return pd.Series(d, index=['COMP', 'ATT', 'YDS', 'LONG', 'TD', 'INT', 'SACK', 'POS'])
 
-def run(x):
+def runs(x):
     d = {}
-    
+    d['RATT'] = x['rush_attempt'].sum()
+    d['RYDS'] = x['yards_gained'].sum()
+    d['RTD'] = x['touchdown'].sum()
+    d['FUM'] = x['fumble'].sum()
+    d['LST'] = x['fumble_lost'].sum()
+    return pd.Series(d, index=['RATT', 'RYDS', 'RTD', 'FUM', 'LST'])
     
 
 
@@ -45,7 +49,7 @@ row2 = 0
 found = False  
 
 throw = data.copy()
-#throw = throw.loc[throw['penalty'] == 0]
+throw = throw.loc[throw['penalty'] == 0]
 throw = throw.loc[(throw['play_type'] == 'pass') | (throw['play_type'] == 'qb_spike')]
 throw.loc[throw.sack == 1, 'yards_gained'] = 0
 throw['name'] = throw['passer_player_name']
@@ -57,19 +61,24 @@ throw = pd.read_csv('qb_2018.csv', low_memory=False)
 out = throw.to_json(orient='records')[1:-1].replace('},{', '} {')
 with open('qb2018.txt', 'w') as f:
     f.write(out)
-throw.to_csv('qb_2018.csv')
 
 
-run = data
-run = run.loc[run['penalty'] == 0]
+run = data.copy()
 run = run.loc[run['play_type'] == 'run']
-run['name'] = run['rusher_player_name']
 run['rattempts'] = 1
-#run = run.groupby(['rusher_player_name', 'posteam']).sum()
-#run = run.sort_values(['yards_gained'])
 run['runYards'] = run['yards_gained']
 run['rAVG'] = run['runYards']/run['rattempts']
 run['rTD'] = run['touchdown']
+run = run.groupby(['rusher_player_name', 'game_id', 'posteam']).apply(runs)
+#run = run.groupby(['rusher_player_name', 'game_id', 'posteam']).apply(runs)
+
+run.to_csv('rb_2018.csv')
+run = pd.read_csv('rb_2018.csv', low_memory=False)
+out = run.to_json(orient='records')[1:-1].replace('},{', '} {')
+with open('rb2018.txt', 'w') as f:
+    f.write(out)
+
+
 #print(run['rattempts'], run['runYards'], run['rAVG'], run['rTD'], run['fumble'], run['fumble_lost'])
 
 receiver = data
