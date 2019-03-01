@@ -21,9 +21,9 @@ def throws(x):
     d['Long'] = x['yards_gained'].max()
     d['TD'] = x['touchdown'].sum()
     d['INT'] = x['interception'].sum()
+    d['HIT'] = x['qb_hit'].sum()
     d['SACK'] = x['sack'].sum()
-    d['POS'] = 'QB'
-    return pd.Series(d, index=['COMP', 'ATT', 'YDS', 'LONG', 'TD', 'INT', 'SACK', 'POS'])
+    return pd.Series(d, index=['COMP', 'ATT', 'YDS', 'LONG', 'TD', 'INT', 'SACK'])
 
 def runs(x):
     d = {}
@@ -33,6 +33,15 @@ def runs(x):
     d['FUM'] = x['fumble'].sum()
     d['LST'] = x['fumble_lost'].sum()
     return pd.Series(d, index=['RATT', 'RYDS', 'RTD', 'FUM', 'LST'])
+    
+def catches(x):
+    d = {}
+    d['REC'] = x['complete_pass'].sum()
+    d['TGTS'] = x['complete_pass'].sum() + x['incomplete_pass'].sum() + x['interception'].sum()
+    d['RECYDS'] = x['yards_gained'].sum()
+    d['RECTD'] = x['touchdown'].sum()
+    return pd.Series(d, index=['REC', 'TGTS', 'RECYDS', 'RECTD'])
+    
     
 
 
@@ -49,7 +58,6 @@ row2 = 0
 found = False  
 
 throw = data.copy()
-throw = throw.loc[throw['penalty'] == 0]
 throw = throw.loc[(throw['play_type'] == 'pass') | (throw['play_type'] == 'qb_spike')]
 throw.loc[throw.sack == 1, 'yards_gained'] = 0
 throw['name'] = throw['passer_player_name']
@@ -81,14 +89,18 @@ with open('rb2018.txt', 'w') as f:
 
 #print(run['rattempts'], run['runYards'], run['rAVG'], run['rTD'], run['fumble'], run['fumble_lost'])
 
-receiver = data
-receiver = receiver.loc[receiver['penalty'] == 0]
-receiver = receiver.loc[receiver['play_type'] == 'pass']
-receiver['name'] = receiver['receiver_player_name'] 
-receiver['target'] = 1
-#receiver = receiver.groupby(['receiver_player_name', 'posteam']).sum()
-#receiver = receiver.sort_values(['yards_gained'])
-#print(receiver)
+receiver = data.copy()
+receiver = receiver.loc[(receiver['play_type'] == 'pass') | (receiver['play_type'] == 'qb_spike')]
+receiver.loc[receiver.sack == 1, 'yards_gained'] = 0
+receiver['name'] = receiver['receiver_player_name']
+receiver = receiver.groupby(['receiver_player_name', 'game_id', 'posteam']).apply(catches)
+
+receiver.to_csv('wr_2018.csv')
+receiver = pd.read_csv('wr_2018.csv', low_memory=False)
+out = receiver.to_json(orient='records')[1:-1].replace('},{', '} {')
+with open('wr2018.txt', 'w') as f:
+    f.write(out)
+
 
 
 kicker = data
@@ -113,3 +125,11 @@ kicker['PAT_percent'] = (kicker['PAT_Made'])/kicker['PAT_Attempt']
 #- kickers.loc[kickers['field_goal_result'] == 'missed']
 
 kicker.to_csv('kicker_2018.csv')
+
+players = pd.concat([throw, run, receiver, kicker], axis=0, ignore_index=True)
+players = players.groupby(['player
+players.to_csv('players_2018.csv')
+players = pd.read_csv('players_2018.csv', low_memory=False)
+out = players.to_json(orient='records')[1:-1].replace('},{', '} {')
+with open('players2018.txt', 'w') as f:
+    f.write(out)
