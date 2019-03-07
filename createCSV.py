@@ -42,9 +42,55 @@ def catches(x):
     d['RECTD'] = x['touchdown'].sum()
     return pd.Series(d, index=['REC', 'TGTS', 'RECYDS', 'RECTD'])
     
-    
+def checkWeek(x):
+    week = {    1:  ['20180906', '20180909', '20180910']#2018
+                    ['20170907', '20170910', '20170911']#2017
+                    ,
+                2:  ['20180913', '20180916', '20180917']#2018
+                    ['20170914', '20170917', '20170918']#2017
+                    , 
+                3:  ['20180920', '20180923', '20180924']#2018
+                    ['20170921', '20170924', '20170925']#2017
+                    ,
+                4:  ['20180927', '20180930', '20181001']#2018
+                    ['20170928', '20171001', '20171002']#2017
+                    ,
+                5:  ['20181004', '20181007', '20181008']#2018
+                    ['20171005', '20171008', '20171009']#2017
+                    ,
+                6:  ['20181011', '20181014', '20181015']#2018
+                    ,
+                7:  ['20181018', '20181021', '20181022']#2018
+                    ,
+                8:  ['20181025', '20181028', '20181029']#2018
+                    ,
+                9:  ['20181101', '20181104', '20181105']#2018
+                    ,
+                10:  ['20181108', '20181111', '20181112']#2018
+                    ,
+                11:  ['20181115', '20181118', '20181119']#2018
+                    ,
+                12:  ['20181122', '20181125', '20181126']#2018
+                    ,
+                13:  ['20181129', '20181202', '20181203']#2018
+                    ,
+                14:  ['20181206', '20181209', '20181210']#2018
+                    ,
+                15:  ['20181213', '20181215', '20181216', '20181217']#2018
+                    ,
+                16:  ['20181222', '20181223', '20181224']#2018
+                    ,
+                17:  ['20181230']#2018
+                }
+    for key, value in week.items():#Check Dictionary Keys
+        for i in range(len(value)):
+            if str(x) == value[i]:
+                return key
+    return 0
+
 num = 'test'
 for idx in range(10):
+    idx = 8
     print(idx)
     if(idx < 9):
         num = str(idx + 10)
@@ -66,14 +112,14 @@ for idx in range(10):
     throw = throw.loc[(throw['play_type'] == 'pass') | (throw['play_type'] == 'qb_spike')]
     throw.loc[throw.sack == 1, 'yards_gained'] = 0
     throw['name'] = throw['passer_player_name']
-    throw = throw.groupby(['passer_player_name', 'game_id', 'posteam', 'name']).apply(throws)
+    throw = throw.groupby(['game_id', 'passer_player_name', 'game_id', 'posteam', 'defteam', 'name']).apply(throws)
 
     throw.to_csv('qb_20'+num+'.csv')
     throw = pd.read_csv('qb_20'+num+'.csv', low_memory=False)
 
-    out = throw.to_json(orient='records')[1:-1].replace('},{', '} {')
-    with open('qb20'+num+'.txt', 'w') as f:
-        f.write(out)
+    #out = throw.to_json(orient='records')[1:-1].replace('},{', '} {')
+    #with open('qb20'+num+'.txt', 'w') as f:
+    #    f.write(out)
 
 
     run = data.copy()
@@ -83,14 +129,13 @@ for idx in range(10):
     run['rAVG'] = run['runYards']/run['rattempts']
     run['rTD'] = run['touchdown']
     run['name'] = run['rusher_player_name']
-    run = run.groupby(['rusher_player_name', 'game_id', 'posteam', 'name']).apply(runs)
-    #run = run.groupby(['rusher_player_name', 'game_id', 'posteam']).apply(runs)
+    run = run.groupby(['game_id', 'rusher_player_name', 'game_id', 'posteam', 'defteam', 'name']).apply(runs)
 
     run.to_csv('rb_20'+num+'.csv')
     run = pd.read_csv('rb_20'+num+'.csv', low_memory=False)
-    out = run.to_json(orient='records')[1:-1].replace('},{', '} {')
-    with open('rb20'+num+'.txt', 'w') as f:
-        f.write(out)
+    #out = run.to_json(orient='records')[1:-1].replace('},{', '} {')
+    #with open('rb20'+num+'.txt', 'w') as f:
+    #    f.write(out)
 
 
     #print(run['rattempts'], run['runYards'], run['rAVG'], run['rTD'], run['fumble'], run['fumble_lost'])
@@ -99,13 +144,13 @@ for idx in range(10):
     receiver = receiver.loc[(receiver['play_type'] == 'pass') | (receiver['play_type'] == 'qb_spike')]
     receiver.loc[receiver.sack == 1, 'yards_gained'] = 0
     receiver['name'] = receiver['receiver_player_name']
-    receiver = receiver.groupby(['receiver_player_name', 'name', 'game_id', 'posteam']).apply(catches)
+    receiver = receiver.groupby(['game_id', 'receiver_player_name', 'name', 'game_id', 'posteam', 'defteam']).apply(catches)
 
     receiver.to_csv('wr_20'+num+'.csv')
     receiver = pd.read_csv('wr_20'+num+'.csv', low_memory=False)
-    out = receiver.to_json(orient='records')[1:-1].replace('},{', '} {')
-    with open('wr20'+num+'.txt', 'w') as f:
-        f.write(out)
+    #out = receiver.to_json(orient='records')[1:-1].replace('},{', '} {')
+    #with open('wr20'+num+'.txt', 'w') as f:
+    #    f.write(out)
 
 
 
@@ -125,22 +170,23 @@ for idx in range(10):
     kicker.loc[(kicker.kick_distance > 39) & (kicker.kick_distance <= 49) & (kicker.field_goal_result == 'made'), 'med'] += 1
     kicker.loc[(kicker.kick_distance >= 50) & (kicker.field_goal_result == 'made'), 'long'] += 1
     kicker['name'] = kicker['kicker_player_name']
-    kicker = kicker.groupby(['kicker_player_name', 'posteam', 'name', 'game_id']).apply(kicks)
+    kicker = kicker.groupby(['game_id', 'kicker_player_name', 'posteam', 'name', 'game_id', 'defteam']).apply(kicks)
     kicker['percent'] = (kicker['short']+kicker['med']+kicker['long'])/kicker['attempt']
     kicker['PAT_percent'] = (kicker['PAT_Made'])/kicker['PAT_Attempt']
-    #kicker['fantasy'] = kicker['short']*4 + kicker['med']*5+ kicker['long']*6 + kicker['PAT_Made']*2 - kicker['PAT_Attempt'] - kicker['attempt']
-    #- kickers.loc[kickers['field_goal_result'] == 'missed']
 
     kicker.to_csv('kicker_20'+num+'.csv')
     kicker = pd.read_csv('kicker_20'+num+'.csv', low_memory=False)
-    out = kicker.to_json(orient='records')[1:-1].replace('},{', '} {')
-    with open('k20'+num+'.txt', 'w') as f:
-        f.write(out)
+    #out = kicker.to_json(orient='records')[1:-1].replace('},{', '} {')
+    #with open('k20'+num+'.txt', 'w') as f:
+    #    f.write(out)
 
 
     players = pd.concat([throw, run, receiver, kicker], axis=0, ignore_index=True)
-    players = players.groupby(['name', 'game_id', 'posteam']).sum()
+    players['date'] = players['game_id'].astype(str).str[:-2].astype(np.int64)
+    players['week'] = np.vectorize(checkWeek)(players['date'])
+    players = players.groupby(['week', 'date', 'game_id', 'name', 'game_id', 'posteam', 'defteam']).sum()
     players['year'] = '20'+num
+    
     players['position'] = players['percent'].apply(lambda x: 'K' if x > 0 else 'FB')
     players.loc[(players.RECYDS > 2*players.RYDS) & (players.ATT < 3) & (players.position != 'K'), 'position'] = 'WR'
     players.loc[(players.RECYDS <= 2*players.RYDS) & (players.ATT < 3) & (players.position != 'K'), 'position'] = 'RB'
@@ -157,3 +203,4 @@ for idx in range(10):
     out = players.to_json(orient='records')[1:-1].replace('},{', '} {')
     with open('players20'+num+'.txt', 'w') as f:
         f.write(out)
+    break
