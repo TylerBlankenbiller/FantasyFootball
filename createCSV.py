@@ -13,6 +13,11 @@ def kicks(x):
     d['PAT_Made'] = x['PAT_Made'].sum() 
     return pd.Series(d, index=['short', 'med', 'long', 'longest', 'attempt', 'PAT_Attempt', 'PAT_Made'])
 	
+def ko(x):
+    d = {}
+    d['KICKOFFTD'] = x['touchdown'].sum()
+    return pd.Series(d, index=['KICKOFFTD'])
+    
 def throws(x):
     d = {}
     d['COMP'] = x['complete_pass'].sum()
@@ -246,21 +251,24 @@ for idx in range(10):
         num = '0'+str(idx)
     data = pd.read_csv("reg_pbp_20"+num+".csv", low_memory=False)
 
-    players = pd.DataFrame({'Name': ['Nan'], 'Pos': ['Nan'], 'Team': ['Nan'], 'Comp': [0], 'PAtt': [0], 'PYds': [0], 'PLong': [0], 'PTD': [0], 'Int': [0],
-                'Sack': [0], 'Rate': [0], 'RYds': [0], 'RTD': [0], 'Fum': [0], 'Lst': [0], 'Rec': [0], 'Tgts': [0], 'RecYds': [0],
-                'RecLong': [0], 'RecTD': [0], 'RAtt': [0], 'RYds': [0], 'RLong': [0], 'RTD': [0], 'Fantasy': [0]})
-    #players = pd.DataFrame()
-    #players.append(temp)
-
     row2 = 0
-    #print(data['touchdown'])
     found = False  
+    
+    kickoff = data.copy()
+    kickoff = kickoff.loc[(kickoff['play_type'] == 'kickoff') & (kickoff['touchdown'] == 1)]
+    kickoff = kickoff.groupby(['posteam', 'game_id', 'defteam'].apply(ko)
+    
+    kickoff.to_csv('ko_20'+num+'.csv')
+    kickoff = pd.read_csv('ko_20'+num+'.csv', low_memory=False)
+    
+    punt = data.copy()
+    punt = punt.loc[punt['play_type'] == 'punt']
 
     throw = data.copy()
     throw = throw.loc[(throw['play_type'] == 'pass') | (throw['play_type'] == 'qb_spike')]
     throw.loc[throw.sack == 1, 'yards_gained'] = 0
     throw['name'] = throw['passer_player_name']
-    throw = throw.groupby(['game_id', 'passer_player_name', 'game_id', 'posteam', 'defteam', 'name']).apply(throws)
+    throw = throw.groupby(['passer_player_name', 'game_id', 'posteam', 'defteam', 'name']).apply(throws)
 
     throw.to_csv('qb_20'+num+'.csv')
     throw = pd.read_csv('qb_20'+num+'.csv', low_memory=False)
