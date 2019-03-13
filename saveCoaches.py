@@ -12,34 +12,15 @@ for idx in range(7):
     num = str(idx + 10)
         
     data = pd.read_csv("reg_comb_20"+num+".csv", low_memory=False)
-    
-    data['HomeHCoach'] = 'NA'
-    data['HomeDCoach'] = 'NA'
-    data['HomeOCoach'] = 'NA'
-    data['AwayHCoach'] = 'NA'
-    data['AwayDCoach'] = 'NA'
-    data['AwayOCoach'] = 'NA'
+
     print("year")
     print(num)
     
-    for index, play in data.iterrows():
-        for ind, week in coach.iterrows():
-            
-            if(play['Week'] == week['Week']) & (play['Year'] == week['Year']):
-                one = str(play['home_mascot_x'])
-                two = str(week['Team'])
-                print(index)
-                #print(week['Team'])
-                if(one == two):
-                    #print("Good")
-                    data.loc['HomeHCoach', index] = week['Coach']
-                    data.loc['HomeDCoach',index] = week['Defense']
-                    data.loc['HomeOCoach',index] = week['Offense']
-                elif(str(play['away_mascot_x']) == str(week['Team'])):
-                    data.loc['AwayHCoach',index] = week['Coach']
-                    data.loc['AwayDCoach',index] = week['Defense']
-                    data.loc['AwayOCoach',index] = week['Offense']
-                break
-    data.to_csv('reg_coaches_20'+str(num)+'.csv')
-    break
-    
+    merged = pd.merge(data, coach, left_on=['home_mascot_x', 'Week', 'Year'], right_on=['Team', 'Week', 'Year'], how='left')
+    merged.rename(columns={'Coach':'HCoach', 'Defense':'HDefense', 'Offense':'HOffense'}, inplace=True)
+    print('a')
+    merged = pd.merge(merged, coach, left_on=['away_mascot_x', 'Week', 'Year'], right_on=['Team', 'Week', 'Year'], how='left')
+    merged.rename(columns={'Coach':'ACoach', 'Defense':'ADefense', 'Offense':'AOffense', 'home_mascot_y': 'home_mascot', 'away_mascot_y': 'away_mascot'}, inplace=True)
+    print('b')
+    merged = merged.drop(columns=['home_mascot_x', 'away_mascot_x', 'Team_x', 'Team_y', 'Unnamed: 0', 'Unnamed: 0.1'])
+    merged.to_csv('almost_20'+num+'.csv')

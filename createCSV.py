@@ -254,12 +254,12 @@ for idx in range(10):
     row2 = 0
     found = False  
     
-    kickoff = data.copy()
-    kickoff = kickoff.loc[(kickoff['play_type'] == 'kickoff') & (kickoff['touchdown'] == 1)]
-    kickoff = kickoff.groupby(['posteam', 'game_id', 'defteam'].apply(ko)
+    #kickoff = data.copy()
+    #kickoff = kickoff.loc[(kickoff['play_type'] == 'kickoff') & (kickoff['touchdown'] == 1)]
+    #kickoff = kickoff.groupby(['posteam', 'game_id', 'defteam'].apply(ko)
     
-    kickoff.to_csv('ko_20'+num+'.csv')
-    kickoff = pd.read_csv('ko_20'+num+'.csv', low_memory=False)
+    #kickoff.to_csv('ko_20'+num+'.csv')
+    #kickoff = pd.read_csv('ko_20'+num+'.csv', low_memory=False)
     
     punt = data.copy()
     punt = punt.loc[punt['play_type'] == 'punt']
