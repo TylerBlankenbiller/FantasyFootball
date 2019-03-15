@@ -14,171 +14,23 @@ print(tf.__version__)
 
 
 raw_dataset = pd.read_csv("final.csv", low_memory=False)
+columnsUse = ['home_team', 'away_team', 'posteam', 'defteam', 'play_type',
+            'pass_location', 'run_gap', 'field_goal_result', 'extra_point_result', 'two_point_conv_result',
+            'timeout_team', 'td_team', 'passer_player_name', 'receiver_player_name', 'rusher_player_name', 
+            'kicker_player_name',
+            'penalty_type',
+            'Weather', 'WDirection', 'HCoach', 'HDefense', 'HOffense', 'ACoach', 'ADefense', 'AOffense']
+
+raw_dataset = pd.get_dummies(raw_dataset, columns = columnsUse)
                       
 dataset = raw_dataset.copy()
 dataset.tail()
 print(type(dataset))
-dataset.feature_column.categorical_column_with_identity(
-    'home_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'away_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'posteam',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'posteam_type',
-    2,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'defteam',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'side_of_field',
-    33,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'game_half',
-    2,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'play_type',
-    6,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'pass_length',
-    2,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'pass_location',
-    3,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'run_location',
-    3,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'run_gap',
-    3,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'field_goal_result',
-    2,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'extra_point_result',
-    2,
-    default_value=None
-)dataset.feature_column.categorical_column_with_identity(
-    'two_point_conv_result',
-    2,
-    default_value=None
-)dataset.feature_column.categorical_column_with_identity(
-    'timeout_team',
-    32,
-    default_value=None
-)dataset.feature_column.categorical_column_with_identity(
-    'td_team',
-    32,
-    default_value=None
-)dataset.feature_column.categorical_column_with_identity(
-    'passer_player_name',
-    2,
-    default_value=None
-)dataset.feature_column.categorical_column_with_identity(
-    'assist_tackle_1_team',
-    32,
-    default_value=None
-)dataset.feature_column.categorical_column_with_identity(
-    'solo_tackle_2_team',
-    32,
-    default_value=None
-)dataset.feature_column.categorical_column_with_identity(
-    'solo_tackle_1_team',
-    32,
-    default_value=None
-)dataset.feature_column.categorical_column_with_identity(
-    'forced_fumble_player_2_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'forced_fumble_player_1_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'assist_tackle_2_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'assist_tackle_3_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'assist_tackle_4_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'fumbled_1_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'fumbled_2_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'fumble_recovery_1_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'fumble_recovery_2_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'return_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'penalty_team',
-    32,
-    default_value=None
-)
-dataset.feature_column.categorical_column_with_identity(
-    'replay_or_challenge_result',
-    2,
-    default_value=None
-)
 
-
+#dataset = dataset.sample(frac=0.01,random_state=0)
 
 train_dataset = dataset.sample(frac=0.8,random_state=0)
+print(type(train_dataset))
 test_dataset = dataset.drop(train_dataset.index)
 
 train_stats = train_dataset.describe()
@@ -202,7 +54,7 @@ def build_model():
         layers.Dense(1)
     ])
 
-    optimizer = tf.keras.optimizers.RMSprop(0.001)
+    optimizer = tf.keras.optimizers.RMSprop(0.0001)
 
     model.compile(loss='mean_squared_error',
                 optimizer=optimizer,
