@@ -1,12 +1,13 @@
 import numpy as np
 import pandas as pd
-import sklearn.model_selection
+from sklearn.model_selection import train_test_split
+#model selection
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 from sklearn import tree
 
 balance_data = pd.read_csv("given.csv", low_memory=False)
-
+balance_data = balance_data.fillna(0)
 print("Dataset Lenght:: ", len(balance_data))
 print("Dataset Shape:: ", balance_data.shape)
 
