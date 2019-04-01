@@ -13,6 +13,7 @@ label_encoder = LabelEncoder()
 
 balance_data = pd.read_csv("given.csv", low_memory=False)
 balance_data = balance_data.sample(frac=0.5, replace=True, random_state=1)
+balance_data.loc[(balance_data.WTemp == 'DOME'), 'WTemp'] = 70
 balance_data = balance_data.fillna(0)
 print("Dataset Lenght:: ", len(balance_data))
 print("Dataset Shape:: ", balance_data.shape)

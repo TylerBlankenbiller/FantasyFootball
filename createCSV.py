@@ -261,13 +261,14 @@ for idx in range(10):
     #kickoff.to_csv('ko_20'+num+'.csv')
     #kickoff = pd.read_csv('ko_20'+num+'.csv', low_memory=False)
     
+    punt = data.copy()
+    punt = punt.loc[punt['play_type'] == 'punt']
 
     throw = data.copy()
     throw = throw.loc[(throw['play_type'] == 'pass') | (throw['play_type'] == 'qb_spike')]
     throw.loc[throw.sack == 1, 'yards_gained'] = 0
     throw['name'] = throw['passer_player_name']
-    throw['player_id'] = throw['passer_player_id']
-    throw = throw.groupby(['passer_player_name', 'game_id', 'player_id', 'posteam', 'defteam', 'name']).apply(throws)
+    throw = throw.groupby(['passer_player_name', 'game_id', 'posteam', 'defteam', 'name']).apply(throws)
 
     throw.to_csv('qb_20'+num+'.csv')
     throw = pd.read_csv('qb_20'+num+'.csv', low_memory=False)
@@ -284,8 +285,7 @@ for idx in range(10):
     run['rAVG'] = run['runYards']/run['rattempts']
     run['rTD'] = run['touchdown']
     run['name'] = run['rusher_player_name']
-    run['player_id'] = run['rusher_player_id']
-    run = run.groupby(['game_id', 'rusher_player_name', 'player_id', 'posteam', 'defteam', 'name']).apply(runs)
+    run = run.groupby(['game_id', 'rusher_player_name', 'game_id', 'posteam', 'defteam', 'name']).apply(runs)
 
     run.to_csv('rb_20'+num+'.csv')
     run = pd.read_csv('rb_20'+num+'.csv', low_memory=False)
@@ -300,8 +300,7 @@ for idx in range(10):
     receiver = receiver.loc[(receiver['play_type'] == 'pass') | (receiver['play_type'] == 'qb_spike')]
     receiver.loc[receiver.sack == 1, 'yards_gained'] = 0
     receiver['name'] = receiver['receiver_player_name']
-    receiver['player_id'] = receiver['receiver_player_id']
-    receiver = receiver.groupby(['player_id', 'receiver_player_name', 'name', 'game_id', 'posteam', 'defteam']).apply(catches)
+    receiver = receiver.groupby(['game_id', 'receiver_player_name', 'name', 'game_id', 'posteam', 'defteam']).apply(catches)
 
     receiver.to_csv('wr_20'+num+'.csv')
     receiver = pd.read_csv('wr_20'+num+'.csv', low_memory=False)
@@ -327,8 +326,7 @@ for idx in range(10):
     kicker.loc[(kicker.kick_distance > 39) & (kicker.kick_distance <= 49) & (kicker.field_goal_result == 'made'), 'med'] += 1
     kicker.loc[(kicker.kick_distance >= 50) & (kicker.field_goal_result == 'made'), 'long'] += 1
     kicker['name'] = kicker['kicker_player_name']
-    kicker['player_id'] = kicker['kicker_player_id']
-    kicker = kicker.groupby(['game_id', 'kicker_player_name', 'posteam', 'name', 'defteam', 'player_id']).apply(kicks)
+    kicker = kicker.groupby(['game_id', 'kicker_player_name', 'posteam', 'name', 'game_id', 'defteam']).apply(kicks)
     kicker['percent'] = (kicker['short']+kicker['med']+kicker['long'])/kicker['attempt']
     kicker['PAT_percent'] = (kicker['PAT_Made'])/kicker['PAT_Attempt']
 
@@ -342,7 +340,7 @@ for idx in range(10):
     players = pd.concat([throw, run, receiver, kicker], axis=0, ignore_index=True)
     players['date'] = players['game_id'].astype(str).str[:-2].astype(np.int64)
     players['week'] = np.vectorize(checkWeek)(players['date'])
-    players = players.groupby(['week', 'date', 'game_id', 'name', 'posteam', 'defteam', 'player_id']).sum()
+    players = players.groupby(['week', 'date', 'game_id', 'name', 'game_id', 'posteam', 'defteam']).sum()
     players['year'] = '20'+num
     
     players['position'] = players['percent'].apply(lambda x: 'K' if x > 0 else 'FB')
@@ -355,30 +353,9 @@ for idx in range(10):
     #players['DATE'] = players['game_id'].apply(lambda x: str(x)[4:8])
     #players['WEEK'] = players.apply(lambda x: 1 if (x['year'] == 208) & (str(x['DATE'][0]) == '9') & (  
     
-    
+    del players['game_id.1']
     players.to_csv('players_20'+num+'.csv')
     players = pd.read_csv('players_20'+num+'.csv', low_memory=False)
-    out = players.to_json(orient='records')[1:-1].replace('},{', '} {')
-    with open('players20'+num+'.txt', 'w') as f:
+    out = players.to_json(orient='records')
+    with open('players_20'+num+'.json', 'w') as f:
         f.write(out)
-
-
-a1 = pd.read_csv("players_2009.csv", low_memory=False)
-a2 = pd.read_csv("players_2010.csv", low_memory=False)
-a3 = pd.read_csv("players_2011.csv", low_memory=False)
-a4 = pd.read_csv("players_2012.csv", low_memory=False)
-a5 = pd.read_csv("players_2013.csv", low_memory=False)
-a6 = pd.read_csv("players_2014.csv", low_memory=False)
-a7 = pd.read_csv("players_2015.csv", low_memory=False)
-a8 = pd.read_csv("players_2016.csv", low_memory=False)
-a9 = pd.read_csv("players_2017.csv", low_memory=False)
-a10 = pd.read_csv("players_2018.csv", low_memory=False)
-
-a11 = pd.concat([a1, a2, a3, a4, a5, a6, a7, a8, a9, a10])
-
-a11.to_csv('goodjson.csv')
-out = players.to_json(orient='records')[1:-1].replace('},{', '} {')
-with open('players20'+num+'.txt', 'w') as f:
-    f.write(out)
-
-

@@ -91,26 +91,24 @@ for idx in range(7):
     num = str(idx + 10)
     print(num)
         
-    data = pd.read_csv("reg_up_20"+num+".csv", low_memory=False)
-    weather = pd.read_csv("weather.csv", low_memory=False)
+    data = pd.read_csv("removed_20"+num+".csv", low_memory=False)
     
-    data['home_mascot'] = np.vectorize(getMascot)(data['home_team'])
-    data['away_mascot'] = np.vectorize(getMascot)(data['away_team'])
-    
-    weather['away_team'] = np.vectorize(getCity)(weather['away_mascot'], weather['Year'])
-    weather['home_team'] = np.vectorize(getCity)(weather['home_mascot'], weather['Year'])
-    
-    
-    new = weather.Wind.str.split('m',1, expand = True)
-    weather['WSpeed'] = new[0]
-    weather['WDirection'] = new[1]
-    new = weather.Weather.str.split('f',1, expand = True)
-    weather['WTemp'] = new[0]
-    weather['Weather'] = new[1]
-    
-    result = pd.merge(data, weather, how='left', on=['away_team', 'home_team', 'Year', 'Week'])
-    
-    result = result.reset_index(drop=True)
+    new = data.Wind.str.split('m',1, expand = True)
+    data['WSpeed'] = new[0]
+    data['WDirection'] = new[1]
+    new = data.Weather.str.split('f',1, expand = True)
+    data['WTemp'] = new[0]
+    data['Weather'] = new[1]
 
+    #data = data.drop(['Wind'])
+    data.loc[(data.WTemp =='DOME'), 'WTemp'] = 70
     
-    result.to_csv('reg_comb_20'+num+'.csv')
+    
+    data['WTemp'].replace('', np.nan, inplace=True)
+    data.dropna(subset=['WTemp'], inplace=True) 
+    data.dropna(subset=['Weather'], inplace=True) 
+    
+    data['duration'] = data['game_seconds_remaining'].diff()
+    data.loc[data.game_seconds_remaining == 3600, 'duration'] = 0
+    
+    data.to_csv('all_20'+num+'.csv')

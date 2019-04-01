@@ -196,8 +196,54 @@ def checkWeek(x):
             if str(x) == value[i]:
                 return key
     return 0
+    
+def getCity(x, y):
+    teams = {   'Falcons':  ['ATL'],
+                'Saints':  ['NO'],
+                'Buccaneers':  ['TB'],
+                'Panthers':  ['CAR'],
+                'Eagles':  ['PHI'],
+                'Giants':  ['NYG'],
+                'Cowboys':  ['DAL'],
+                'Redskins':  ['WAS'],
+                'Rams':  ['LA', 'STL'],
+                'Seahawks':  ['SEA'],
+                '49ers':  ['SF'],
+                'Cardinals':  ['ARI'],
+                'Bears':  ['CHI'],
+                'Packers':  ['GB'],
+                'Vikings':  ['MIN'],
+                'Lions':  ['DET'],
+                'Patriots':  ['NE'],
+                'Dolphins':  ['MIA'],
+                'Jets':  ['NYJ'],
+                'Bills':  ['BUF'],
+                'Bengals':  ['CIN'],
+                'Steelers':  ['PIT'],
+                'Browns':  ['CLE'],
+                'Ravens':  ['BAL'],
+                'Chiefs':  ['KC'],
+                'Broncos':  ['DEN'],
+                'Raiders':  ['OAK'],
+                'Chargers':  ['LAC', 'SD'],
+                'Colts':  ['IND'],
+                'Jaguars':  ['JAX'],
+                'Titans':  ['TEN'],
+                'Texans':  ['HOU']
+            }
+    for key, value in teams.items():#Check Dictionary Keys
+        if str(x) == key:
+            if (int(y) < 2016) & len(value) > 1:
+                return value[1]
+            else:
+                return value[0]
+    return 'NA'
+   
 
 weather = pd.read_csv("weather.csv", low_memory=False)
+weather['Away'] = np.vectorize(getCity)(weather['Away'], weather['Year'])
+weather['Home'] = np.vectorize(getCity)(weather['Home'], weather['Year'])
+print(weather['Away'])
 num = 'test'
 for idx in range(10):
     print(idx)
@@ -210,13 +256,19 @@ for idx in range(10):
     
     data['Year'] = '20'+num
     
-    data.rename(columns={'home_team': 'Home', 'away_team': 'Away'}, inplace=True)
+    data['Year'] = data['Year'].astype(int)
+    weather['Year'] = weather['Year'].astype(int)
+    
+    #data = data.join(weather, lsuffix='_caller', rsuffix='_other')
+    
+    #data.rename(columns={'home_team': 'Home', 'away_team': 'Away'}, inplace=True)
 	
-    data = pd.concat([data, weather], axis=1, sort=False)#44597...2009
+    
+    data = pd.merge(data, weather, left_on=['away_team', 'home_team', 'Year'], right_on=['Away', 'Home', 'Year'], how='left')#44597...2009
+    
+    #data.rename(columns={list(data)[1]: "home_team", list(data)[1]: "away_team"}, inplace=True)
     
     #data['Date'] = data['game_id'].astype(str).str[:-2].astype(np.int64)
     #data['Week'] = np.vectorize(checkWeek)(data['Date'])
     
     data.to_csv('reg_up_20'+num+'.csv')
-    
-    
