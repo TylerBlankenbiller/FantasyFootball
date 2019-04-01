@@ -197,6 +197,7 @@ def checkWeek(x):
                 return key
     return 0
 
+weather = pd.read_csv("weather.csv", low_memory=False)
 num = 'test'
 for idx in range(10):
     print(idx)
@@ -209,8 +210,12 @@ for idx in range(10):
     
     data['Year'] = '20'+num
     
-    data['Date'] = data['game_id'].astype(str).str[:-2].astype(np.int64)
-    data['Week'] = np.vectorize(checkWeek)(data['Date'])
+    data.rename(columns={'home_team': 'Home', 'away_team': 'Away'}, inplace=True)
+	
+    data = pd.concat([data, weather], axis=1, sort=False)#44597...2009
+    
+    #data['Date'] = data['game_id'].astype(str).str[:-2].astype(np.int64)
+    #data['Week'] = np.vectorize(checkWeek)(data['Date'])
     
     data.to_csv('reg_up_20'+num+'.csv')
     
