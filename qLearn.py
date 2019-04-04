@@ -15,20 +15,26 @@ tf.enable_eager_execution()
 
 print(tf.__version__)
 
-training_df: pd.DataFrame = pd.read_csv("final.csv", low_memory=False)
+training_df: pd.DataFrame = pd.read_csv("games.csv", low_memory=False)
+#throw out 32 columns
+#training_df = training_df.drop([#'play_id', #'game_id', #'home_team', #'away_team', 'side_of_field',
+#'desc', #'play_type', #'shotgun',  #'no_huddle', #'qb_dropback', #'qb_scramble',
+#'punt_inside_the_twenty', #'punt_out_of_bounds', #'punt_in_endzone', #'punt_downed',
+#'punt_fair_catch', #'kickoff_inside_twenty', #'kickoff_in_endzone', 
+#'kickoff_out_of_bounds', #'kickoff_downed', #'kickoff_fair_catch', 
+#'fumble_out_of_bounds', #'solo_tackle', #'tackled_for_loss', 
+#'own_kickoff_recovery', #'assist_tackle', #'lateral_reception', #'lateral_rush',
+#'lateral_return', #'lateral_recovery', #'punter_player_id', #'Wind'])
 
 training_df = training_df.replace({'STL':'LA'}, regex=True)
 training_df = training_df.replace({'SD':'LAC'}, regex=True)
 training_df = training_df.replace({'JAC':'JAX'}, regex=True)
-training_df['home_team'] = 'H' + training_df['home_team'].astype(str)
-training_df['away_team'] = 'A' + training_df['away_team'].astype(str)
 training_df['posteam'] = 'P' + training_df['posteam'].astype(str)
 training_df['defteam'] = 'D' + training_df['defteam'].astype(str)
 training_df['pass_location'] = 'Pass' + training_df['pass_location'].astype(str)
 training_df['run_location'] = 'Run' + training_df['run_location'].astype(str)
 training_df['extra_point_result'] = 'Extra' + training_df['extra_point_result'].astype(str)
 training_df['two_point_conv_result'] = 'Two' + training_df['two_point_conv_result'].astype(str)
-training_df['play_type'] = 'Play' + training_df['play_type'].astype(str)
 training_df['run_gap'] = 'Gap' + training_df['run_gap'].astype(str)
 training_df['field_goal_result'] = 'Field' + training_df['field_goal_result'].astype(str)
 training_df['timeout_team'] = 'TO' + training_df['timeout_team'].astype(str)
@@ -38,7 +44,6 @@ training_df['receiver_player_id'] = 'Rec' + training_df['receiver_player_id'].as
 training_df['rusher_player_id'] = 'Rush' + training_df['rusher_player_id'].astype(str)
 training_df['kicker_player_id'] = 'Kick' + training_df['kicker_player_id'].astype(str)
 training_df['penalty_team'] = 'PTeam' + training_df['penalty_team'].astype(str)
-training_df['replay_or_challenge_result'] = 'Replay' + training_df['replay_or_challenge_result'].astype(str)
 training_df['penalty_type'] = 'Pen' + training_df['penalty_type'].astype(str)
 training_df['Weather'] = 'Weather' + training_df['Weather'].astype(str)
 training_df['WDirection'] = training_df['WDirection'].astype(str)
@@ -113,8 +118,6 @@ training_df = training_df.drop(columns=['home_team'])
 training_df = pd.concat([training_df, pd.get_dummies(training_df['posteam_type'])], axis=1)
 training_df = training_df.drop(columns=['posteam_type'])
 
-training_df.loc[training_df.WTemp == 'DOME', 'WTemp']=70
-training_df.loc[training_df.WTemp == '33/51', 'WTemp']=40
 dataset = training_df.copy()
 del training_df
 print(dataset.tail())
