@@ -15,10 +15,6 @@ tf.enable_eager_execution()
 
 print(tf.__version__)
 
-#def norm(x):
-#    print('Norm')
-#    return (x - x.sum()/x.count() / train_stats['std']
-
 training_df: pd.DataFrame = pd.read_csv("games2.csv", low_memory=False)
 training_df.loc[(training_df.WTemp == '33/51'), 'WTemp'] = '42'
 training_df = training_df.fillna(0)
@@ -117,6 +113,34 @@ training_df = training_df.drop(columns=['posteam_type'])
 training_df = pd.concat([training_df, pd.get_dummies(training_df['fumbled_1_player_id'])], axis=1)
 training_df = training_df.drop(columns=['fumbled_1_player_id'])
 
+################################################################################################
+# Create some variables.
+v1 = tf.get_variable("v1", shape=[3], initializer = tf.zeros_initializer)
+v2 = tf.get_variable("v2", shape=[5], initializer = tf.zeros_initializer)
+
+inc_v1 = v1.assign(v1+1)
+dec_v2 = v2.assign(v2-1)
+
+# Add an op to initialize the variables.
+init_op = tf.global_variables_initializer()
+
+# Add ops to save and restore all the variables.
+saver = tf.train.Saver()
+
+# Later, launch the model, initialize the variables, do some work, and save the
+# variables to disk.
+with tf.Session() as sess:
+    sess.run(init_op)
+    # Do some work with the model.
+    inc_v1.op.run()
+    dec_v2.op.run()
+    # Save the variables to disk.
+    save_path = saver.save(sess, "/tmp/model.ckpt")
+    print("Model saved in path: %s" % save_path)
+    ###########################################################################################
+
+
+
 dataset = training_df.copy()
 del training_df
 print(dataset.tail())
@@ -143,6 +167,9 @@ train_labels = train_dataset.pop('ydsnet')
 test_labels = test_dataset.pop('ydsnet')
 
 #train_labels = train_dataset.pop(Aoff)
+
+#def norm(x):
+    #return (x - x['ydsnet'].sum()/x['ydsnet'].count() / train_stats['ydsnet'].std()
 
 #normed_train_data = norm(train_dataset)
 #normed_test_data = norm(test_dataset)
@@ -171,10 +198,11 @@ example_result = model.predict(example_batch)
 # Display training progress by printing a single dot for each completed epoch
 class PrintDot(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs):
-        if epoch % 100 == 0: print('')
+        if epoch % 100 == 0: 
+            print('')
         print('.', end='')
 
-EPOCHS = 100
+EPOCHS = 1000
 
 history = model.fit(
     train_dataset, train_labels,
@@ -196,19 +224,38 @@ def plot_history(history):
              label='Train Error')
     plt.plot(hist['epoch'], hist['val_mean_absolute_error'],
              label = 'Val Error')
-    plt.ylim([0,5])
+    plt.ylim([0,1000])
     plt.legend()
     
     plt.figure()
     plt.xlabel('Epoch')
-    plt.ylabel('Mean Square Error [$MPG^2$]')
+    plt.ylabel('Mean Square Error [$YDSNet^2$]')
     plt.plot(hist['epoch'], hist['mean_squared_error'],
              label='Train Error')
     plt.plot(hist['epoch'], hist['val_mean_squared_error'],
              label = 'Val Error')
-    plt.ylim([0,20])
+    plt.ylim([0,2000])
     plt.legend()
     plt.show()
 
 
 plot_history(history)
+
+test_predictions = model.predict(normed_test_data).flatten()
+
+plt.scatter(test_labels, test_predictions)
+plt.xlabel('True Values [YDSNet]')
+plt.ylabel('Predictions [YDSNet]')
+plt.axis('equal')
+plt.axis('square')
+plt.xlim([0,plt.xlim()[1]])
+plt.ylim([0,plt.ylim()[1]])
+_ = plt.plot([-100, 100], [-100, 100])
+plt.show()
+
+error = test_predictions - test_labels
+plt.hist(error, bins = 25)
+plt.xlabel("Prediction Error [YDSNet]")
+_ = plt.ylabel("Count")
+
+
