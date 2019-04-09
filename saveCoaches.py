@@ -55,9 +55,12 @@ for idx in range(7):
     num = str(idx + 10)
         
     data = pd.read_csv("reg_up_20"+num+".csv", low_memory=False)
-
+    data = data.loc[data['Weather'] != '']
     print("year")
     print(num)
+    
+    if idx == 8:
+        data = data.loc[data['SType'] == 'Pre']
     
     merged = pd.merge(data, coach, left_on=['Home', 'Week', 'Year'], right_on=['Team', 'Week', 'Year'], how='left')
     merged.rename(columns={'Coach':'HCoach', 'Defense':'HDefense', 'Offense':'HOffense'}, inplace=True)
@@ -66,4 +69,5 @@ for idx in range(7):
     merged.rename(columns={'Coach':'ACoach', 'Defense':'ADefense', 'Offense':'AOffense', 'home_mascot_y': 'home_mascot', 'away_mascot_y': 'away_mascot'}, inplace=True)
     print('b')
     #merged = merged.drop(columns=['home_mascot_x', 'away_mascot_x', 'Team_x', 'Team_y', 'Unnamed: 0', 'Unnamed: 0.1'])
+    merged = merged.loc[merged['ACoach'] != '']
     merged.to_csv('almost_20'+num+'.csv')

@@ -1,3 +1,4 @@
+    
 from __future__ import absolute_import, division, print_function
 
 import pathlib
@@ -10,6 +11,109 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import gc
+
+def throwOut(train_stats):
+    for c in train_stats.columns:
+        if c == 'yards_gained':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'qb_kneel':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'qb_spike':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('Pass'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'air_yards':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'yards_after_catch':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('Run'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('Gap'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('Field'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'kick_distance':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('Extra'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('Two'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'timeout':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('TO'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('TD'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'first_down_rush':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'first_down_pass':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'third_down_converted':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'third_down_failed':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'fourth_down_converted':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'fourth_down_failed':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'incomplete_pass':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'interception':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'safety':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'fumble_lost':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'own_kickoff_recovery_td':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'qb_hit':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'rush_attempt':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'pass_attempt':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'sack':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'touchdown':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'pass_touchdown':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'rush_touchdown':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'extra_point_attempt':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'two_point_attempt':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'field_goal_attempt':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'punt_attempt':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'fumble':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'complete_pass':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('Pass2'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('Rec'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('Rush'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('Kick'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c.startswith('fum'):
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'fumble_recovery_1_yards':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'return_yards':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'duration':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'Pre':
+            train_stats = train_stats.drop(c, axis=1)
+        elif c == 'Regular':
+            train_stats = train_stats.drop(c, axis=1)
+    return train_stats
+
 tf.enable_eager_execution()
 
 with tf.device("/device:GPU:0"):
@@ -23,24 +127,19 @@ with tf.device("/device:GPU:0"):
 
     print(tf.__version__)
 
-    training_df: pd.DataFrame = pd.read_csv("games2.csv", low_memory=False)
+    training_df: pd.DataFrame = pd.read_csv("gg.csv", low_memory=False)
     training_df = training_df.loc[training_df['posteam'] != '']
     training_df = training_df.loc[training_df['penalty'] == 0]
     training_df = training_df.drop(columns=['penalty', 'first_down_penalty', 'penalty_team', 'penalty_yards'])
     training_df = training_df.loc[training_df['kickoff_attempt'] == 0]
     training_df = training_df.drop(columns=['kickoff_attempt'])
     training_df.loc[(training_df.WTemp == '33/51'), 'WTemp'] = '42'
+    training_df.loc[(training_df.WTemp == '53/78'), 'WTemp'] = '65'
+    training_df.loc[(training_df.WTemp == '57/72'), 'WTemp'] = '65'
     training_df = training_df.fillna(0)
-    #throw out 32 columns
-    #training_df = training_df.drop([#'play_id', #'game_id', #'home_team', #'away_team', 'side_of_field',
-    #'desc', #'play_type', #'shotgun',  #'no_huddle', #'qb_dropback', #'qb_scramble',
-    #'punt_inside_the_twenty', #'punt_out_of_bounds', #'punt_in_endzone', #'punt_downed',
-    #'punt_fair_catch', #'kickoff_inside_twenty', #'kickoff_in_endzone', 
-    #'kickoff_out_of_bounds', #'kickoff_downed', #'kickoff_fair_catch', 
-    #'fumble_out_of_bounds', #'solo_tackle', #'tackled_for_loss', 
-    #'own_kickoff_recovery', #'assist_tackle', #'lateral_reception', #'lateral_rush',
-    #'lateral_return', #'lateral_recovery', #'punter_player_id', #'Wind'])
 
+
+    
     training_df = training_df.replace({'STL':'LA'}, regex=True)
     training_df = training_df.replace({'SD':'LAC'}, regex=True)
     training_df = training_df.replace({'JAC':'JAX'}, regex=True)
@@ -54,7 +153,7 @@ with tf.device("/device:GPU:0"):
     training_df['field_goal_result'] = 'Field' + training_df['field_goal_result'].astype(str)
     training_df['timeout_team'] = 'TO' + training_df['timeout_team'].astype(str)
     training_df['td_team'] = 'TD' + training_df['td_team'].astype(str)
-    training_df['passer_player_id'] = 'Pass' + training_df['passer_player_id'].astype(str)
+    training_df['passer_player_id'] = 'Pass2' + training_df['passer_player_id'].astype(str)
     training_df['receiver_player_id'] = 'Rec' + training_df['receiver_player_id'].astype(str)
     training_df['rusher_player_id'] = 'Rush' + training_df['rusher_player_id'].astype(str)
     training_df['kicker_player_id'] = 'Kick' + training_df['kicker_player_id'].astype(str)
@@ -75,6 +174,9 @@ with tf.device("/device:GPU:0"):
     #training_df[''] = '' + training_df[''].astype(str)
     #training_df[''] = '' + training_df[''].astype(str)
     Aoff = list(pd.get_dummies(training_df['AOffense']).columns.values)
+    
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['SType'])], axis=1)
+    training_df = training_df.drop(columns=['SType'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['AOffense'])], axis=1)
     training_df = training_df.drop(columns=['AOffense'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['ADefense'])], axis=1)
@@ -172,12 +274,20 @@ with tf.device("/device:GPU:0"):
     print("gooder")
     train_stats = train_dataset.describe()
     print("goodest")
-    train_stats.pop("yards_gained")
+    
+    
+    
+    train_stats = throwOut(train_stats)   
+
+    
+    
     train_stats = train_stats.transpose()
     print(train_stats)
 
-    train_labels = train_dataset.pop('yards_gained')
-    test_labels = test_dataset.pop('yards_gained')
+    train_labels = train_dataset
+    test_labels = train_dataset
+    train_labels = throwOut(train_labels)   
+    test_labels = throwOut(test_labels)   
 
     #train_labels = train_dataset.pop(Aoff)
 
@@ -237,7 +347,7 @@ with tf.device("/device:GPU:0"):
                  label='Train Error')
         plt.plot(hist['epoch'], hist['val_mean_absolute_error'],
                  label = 'Val Error')
-        plt.ylim([0,1000])
+        plt.ylim([-100,1000])
         plt.legend()
         
         plt.figure()
@@ -247,7 +357,7 @@ with tf.device("/device:GPU:0"):
                  label='Train Error')
         plt.plot(hist['epoch'], hist['val_mean_squared_error'],
                  label = 'Val Error')
-        plt.ylim([0,2000])
+        plt.ylim([-100,2000])
         plt.legend()
         plt.show()
 
@@ -270,4 +380,3 @@ with tf.device("/device:GPU:0"):
     plt.hist(error, bins = 25)
     plt.xlabel("Prediction Error [yards_gained]")
     _ = plt.ylabel("Count")
-

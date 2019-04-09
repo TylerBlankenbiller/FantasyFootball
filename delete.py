@@ -13,7 +13,8 @@ for idx in range(7):
 
     print("year")
     print(num)
-    
+    data=data.fillna(0)
+    data = data.loc[data['HCoach'] != 0]
     data = data.drop(['Unnamed: 0', 'play_id', 'game_date', 'game_half', 'time', 'yrdln', 'pass_length',
         'passer_player_name', 'receiver_player_name', 'rusher_player_name', 'lateral_receiver_player_id',
         'lateral_receiver_player_name', 'lateral_rusher_player_id', 'lateral_rusher_player_name',

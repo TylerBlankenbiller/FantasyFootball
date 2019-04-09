@@ -251,12 +251,17 @@ for idx in range(10):
         num = str(idx + 10)
     else:
         num = '0'+str(idx)
-        
+    print(num) 
     data = pd.read_csv("reg_pbp_20"+num+".csv", low_memory=False)
+    data2 = pd.read_csv("pre_pbp_20"+num+".csv", low_memory=False)
     
     data['Year'] = '20'+num
+    data2['Year'] = '20'+num
+    data['SType'] = 'Regular'
+    data2['SType'] = 'Pre'
     
     data['Year'] = data['Year'].astype(int)
+    data2['Year'] = data2['Year'].astype(int)
     weather['Year'] = weather['Year'].astype(int)
     
     #data = data.join(weather, lsuffix='_caller', rsuffix='_other')
@@ -264,11 +269,13 @@ for idx in range(10):
     #data.rename(columns={'home_team': 'Home', 'away_team': 'Away'}, inplace=True)
 	
     
-    data = pd.merge(data, weather, left_on=['away_team', 'home_team', 'Year'], right_on=['Away', 'Home', 'Year'], how='left')#44597...2009
+    data = pd.merge(data, weather, left_on=['away_team', 'home_team', 'Year', 'SType'], right_on=['Away', 'Home', 'Year', 'SType'], how='left')#44597...2009
+    data2 = pd.merge(data2, weather, left_on=['away_team', 'home_team', 'Year', 'SType'], right_on=['Away', 'Home', 'Year', 'SType'], how='left')#44597...2009
     
+    data2 = data2.append(data, ignore_index=True)
     #data.rename(columns={list(data)[1]: "home_team", list(data)[1]: "away_team"}, inplace=True)
     
     #data['Date'] = data['game_id'].astype(str).str[:-2].astype(np.int64)
     #data['Week'] = np.vectorize(checkWeek)(data['Date'])
     
-    data.to_csv('reg_up_20'+num+'.csv')
+    data2.to_csv('reg_up_20'+num+'.csv')
