@@ -206,7 +206,7 @@ def getCity(x, y):
                 'Giants':  ['NYG'],
                 'Cowboys':  ['DAL'],
                 'Redskins':  ['WAS'],
-                'Rams':  ['LA', 'STL'],
+                'Rams':  ['LA'],
                 'Seahawks':  ['SEA'],
                 '49ers':  ['SF'],
                 'Cardinals':  ['ARI'],
@@ -225,7 +225,7 @@ def getCity(x, y):
                 'Chiefs':  ['KC'],
                 'Broncos':  ['DEN'],
                 'Raiders':  ['OAK'],
-                'Chargers':  ['LAC', 'SD'],
+                'Chargers':  ['LAC'],
                 'Colts':  ['IND'],
                 'Jaguars':  ['JAX'],
                 'Titans':  ['TEN'],
@@ -245,7 +245,7 @@ weather['Away'] = np.vectorize(getCity)(weather['Away'], weather['Year'])
 weather['Home'] = np.vectorize(getCity)(weather['Home'], weather['Year'])
 print(weather['Away'])
 num = 'test'
-for idx in range(10):
+for idx in range(10):#10 years
     print(idx)
     if(idx < 9):
         num = str(idx + 10)
@@ -253,7 +253,14 @@ for idx in range(10):
         num = '0'+str(idx)
     print(num) 
     data = pd.read_csv("reg_pbp_20"+num+".csv", low_memory=False)
+    data.replace(to_replace = 'JAC', value = 'JAX', inplace = True)
+    data.replace(to_replace = 'SD', value = 'LAC', inplace = True)
+    data.replace(to_replace = 'STL', value = 'LA', inplace = True)
+    
     data2 = pd.read_csv("pre_pbp_20"+num+".csv", low_memory=False)
+    data2.replace(to_replace = 'JAC', value = 'JAX', inplace = True)
+    data2.replace(to_replace = 'SD', value = 'LAC', inplace = True)
+    data2.replace(to_replace = 'STL', value = 'LA', inplace = True)
     
     data['Year'] = '20'+num
     data2['Year'] = '20'+num

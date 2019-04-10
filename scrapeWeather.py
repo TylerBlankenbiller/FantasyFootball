@@ -14,13 +14,13 @@ df = pd.DataFrame(columns=['Home', 'Away', 'Weather', 'Wind', 'Year', 'Week'])
 #df['wind'] = df['wind'].astype('str')
 
 num = 'test'
-for idx in range(9):
+for idx in range(9):#years 2012-2018
     if idx < 2:
         idx = 2
     num = str(idx + 10)
     
     print("IDX ", num)
-    for week in range(17):
+    for week in range(17):#17 weeks
         week += 1
         #URL
         quote_page = 'http://www.nflweather.com/en/week/20'+str(num)+'/week-'+str(week)+'/'
@@ -39,7 +39,7 @@ for idx in range(9):
         
         i = 8
         
-        while i < max:
+        while i <= max:#games per week
             
             away = test2[i-8].get_text()
             home = test2[i-7].get_text()
@@ -62,7 +62,7 @@ for idx in range(9):
 
         time.sleep(2)
         
-        if week < 4:
+        if week < 4:#3 preseason weeks(Week 4 most starters don't play, so ignore)
             quote_page = 'http://www.nflweather.com/en/week/20'+str(num)+'/pre-season-week-'+str(week)+'/'
             print(quote_page)
             
@@ -79,7 +79,7 @@ for idx in range(9):
             
             i = 8
             
-            while i < max:
+            while i <= max:#games per week
                 
                 away = test2[i-8].get_text()
                 home = test2[i-7].get_text()

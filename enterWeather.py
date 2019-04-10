@@ -85,7 +85,7 @@ def getCity(x, y):
     return 'NA'
 
         
-data = pd.read_csv("final.csv", low_memory=False)
+data = pd.read_csv("allfinal.csv", low_memory=False)
     
 new = data.Wind.str.split('m',1, expand = True)
 data['WSpeed'] = new[0]
@@ -130,5 +130,18 @@ for c in data2.columns:
     
 data = pd.merge(data, data2, left_on=['game_id'], right_on=['game_id'], how='left')
 
+
+
+training_df = training_df.drop(columns=['game_id'])
+training_df = training_df.drop(columns=['Wind'])
+training_df = training_df.loc[training_df['penalty'] == 0]
+training_df = training_df.drop(columns=['penalty', 'first_down_penalty', 'penalty_team', 'penalty_yards'])
+training_df = training_df.loc[training_df['posteam'] != '']
+training_df = training_df.loc[training_df['kickoff_attempt'] == 0]
+training_df = training_df.drop(columns=['kickoff_attempt'])
+training_df.loc[(training_df.WTemp == '33/51'), 'WTemp'] = '42'
+training_df.loc[(training_df.WTemp == '53/78'), 'WTemp'] = '65'
+training_df.loc[(training_df.WTemp == '57/72'), 'WTemp'] = '65'
+training_df = training_df.fillna(0)
 print(data)
 data.to_csv('test.csv')

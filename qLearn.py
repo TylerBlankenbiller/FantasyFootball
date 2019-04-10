@@ -127,16 +127,7 @@ with tf.device("/device:GPU:0"):
 
     print(tf.__version__)
 
-    training_df: pd.DataFrame = pd.read_csv("gg.csv", low_memory=False)
-    training_df = training_df.loc[training_df['posteam'] != '']
-    training_df = training_df.loc[training_df['penalty'] == 0]
-    training_df = training_df.drop(columns=['penalty', 'first_down_penalty', 'penalty_team', 'penalty_yards'])
-    training_df = training_df.loc[training_df['kickoff_attempt'] == 0]
-    training_df = training_df.drop(columns=['kickoff_attempt'])
-    training_df.loc[(training_df.WTemp == '33/51'), 'WTemp'] = '42'
-    training_df.loc[(training_df.WTemp == '53/78'), 'WTemp'] = '65'
-    training_df.loc[(training_df.WTemp == '57/72'), 'WTemp'] = '65'
-    training_df = training_df.fillna(0)
+    training_df: pd.DataFrame = pd.read_csv("test.csv", low_memory=False, index_col=0)
 
 
     
@@ -300,8 +291,8 @@ with tf.device("/device:GPU:0"):
 
     def build_model():
         model = keras.Sequential([
-            layers.Dense(256, activation=tf.nn.relu, input_shape=[len(train_dataset.keys())]),
-            layers.Dense(256, activation=tf.nn.relu),
+            layers.Dense(512, activation=tf.nn.relu, input_shape=[len(train_dataset.keys())]),
+            layers.Dense(512, activation=tf.nn.relu),
             layers.Dense(1)])
 
         optimizer = tf.keras.optimizers.RMSprop(0.001)
@@ -325,7 +316,7 @@ with tf.device("/device:GPU:0"):
                 print('')
             print('.', end='')
 
-    EPOCHS = 301
+    EPOCHS = 30
 
     history = model.fit(
         train_dataset, train_labels,
