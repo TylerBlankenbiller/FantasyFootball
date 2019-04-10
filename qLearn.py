@@ -128,6 +128,23 @@ with tf.device("/device:GPU:0"):
     print(tf.__version__)
 
     training_df: pd.DataFrame = pd.read_csv("test.csv", low_memory=False, index_col=0)
+    training_df = training_df.loc[training_df['posteam'] != '']
+    training_df.loc[(training_df.WTemp == '33/51'), 'WTemp'] = '42'
+    training_df.loc[(training_df.WTemp == '53/78'), 'WTemp'] = '65'
+    training_df.loc[(training_df.WTemp == '57/72'), 'WTemp'] = '65'
+    training_df.loc[(training_df.WTemp == '39/53'), 'WTemp'] = '46'
+    training_df = training_df.fillna(0)
+    training_df = training_df.loc[training_df['penalty'] == 0]
+    training_df = training_df.loc[training_df['kickoff_attempt'] == 0]
+    training_df = training_df.drop(columns=['penalty', 'first_down_penalty', 'penalty_team', 'penalty_yards'])
+    training_df = training_df.drop(columns=['kickoff_attempt'])
+    training_df = training_df.drop(columns=['game_id'])
+    training_df = training_df.drop(columns=['THRpasser_player_id'])
+    training_df = training_df.drop(columns=['RECreceiver_player_id'])
+    training_df = training_df.drop(columns=['RSHrusher_player_id'])
+    training_df = training_df.drop(columns=['KICKkicker_player_id'])
+    training_df = training_df.drop(columns=['Wind'])
+
 
 
     

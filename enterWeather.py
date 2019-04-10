@@ -132,16 +132,17 @@ data = pd.merge(data, data2, left_on=['game_id'], right_on=['game_id'], how='lef
 
 
 
-training_df = training_df.drop(columns=['game_id'])
-training_df = training_df.drop(columns=['Wind'])
-training_df = training_df.loc[training_df['penalty'] == 0]
-training_df = training_df.drop(columns=['penalty', 'first_down_penalty', 'penalty_team', 'penalty_yards'])
-training_df = training_df.loc[training_df['posteam'] != '']
-training_df = training_df.loc[training_df['kickoff_attempt'] == 0]
-training_df = training_df.drop(columns=['kickoff_attempt'])
-training_df.loc[(training_df.WTemp == '33/51'), 'WTemp'] = '42'
-training_df.loc[(training_df.WTemp == '53/78'), 'WTemp'] = '65'
-training_df.loc[(training_df.WTemp == '57/72'), 'WTemp'] = '65'
-training_df = training_df.fillna(0)
+#data = data.drop(columns=['game_id'])
+#data = data.drop(columns=['Wind'])
+
+#data = data.drop(columns=['penalty', 'first_down_penalty', 'penalty_team', 'penalty_yards'])
+data = data.loc[data['posteam'] != '']
+#data = data.drop(columns=['kickoff_attempt'])
+data.loc[(data.WTemp == '33/51'), 'WTemp'] = '42'
+data.loc[(data.WTemp == '53/78'), 'WTemp'] = '65'
+data.loc[(data.WTemp == '57/72'), 'WTemp'] = '65'
+data = data.fillna(0)
+data = data.loc[data['penalty'] == 0]
+data = data.loc[data['kickoff_attempt'] == 0]
 print(data)
 data.to_csv('test.csv')
