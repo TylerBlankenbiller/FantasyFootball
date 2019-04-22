@@ -19,8 +19,9 @@ def clean(training_df):
     training_df['ACoach'] = 'ACo' + training_df['ACoach'].astype(str)
     training_df['ADefense'] = 'ADef' + training_df['ADefense'].astype(str)
     training_df['AOffense'] = 'AOff' + training_df['AOffense'].astype(str)
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='home', 'posteam_type']=1
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='away', 'posteam_type']=0
+    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    training_df['posteam_type'] = training_df['posteam_type'].apply(int)
     
     training_df = pd.concat([training_df, pd.get_dummies(training_df['SType'])], axis=1)
     training_df = training_df.drop(columns=['SType'])
@@ -57,8 +58,11 @@ def throwOut(train_stats):
         yards gained, etc.)
     '''
     for c in train_stats.columns.values.astype(str):
+
         if c == 'qb_kneel':
             train_stats = train_stats.drop(c, axis=1)
+        elif c == 'extra_point_result':
+           train_stats = train_stats.drop(c, axis=1)
         elif c == 'qb_spike':
            train_stats = train_stats.drop(c, axis=1)
         elif c == 'air_yards':
@@ -152,6 +156,14 @@ df = throwOut(df)
 
 df = df.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
 
+df['timeout_team'] = df['timeout_team'].astype(str).map({'DAL':0,'NYG':1,'PHI':2,'WAS':3,'CHI':4,'DET':5,'GB':6,'MIN':7,
+                                        'ATL':8,'CAR':9,'NO':10,'TB':11,'ARI':12,'LA':13,'SF':14,'SEA':15,
+                                        'BUF':16,'MIA':17,'NE':18,'NYJ':19,'BAL':20,'CIN':21,'CLE':22,'PIT':23,
+                                        'HOU':24,'IND':25,'JAX':26,'TEN':27,'DEN':28,'KC':29,'LAC':30,'OAK':31, '0':32})
+
+df = df.applymap(int)
+
+
 X = df.drop('timeout_team', axis=1)
 y = df['timeout_team']
 
@@ -161,7 +173,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
 from sklearn.ensemble import RandomForestClassifier
 
-random_forest = RandomForestClassifier(n_estimators=12, max_depth=12, random_state=1)
+random_forest = RandomForestClassifier(n_estimators=33, max_depth=33, random_state=1)
 
 random_forest.fit(X_train, y_train)
 

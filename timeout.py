@@ -1,7 +1,9 @@
 import pandas as pd
 
 
-df = pd.read_csv('testLast.csv', low_memory=False)
+df = pd.read_csv('testLast2013-2017.csv', low_memory=False)
+
+df = df.loc[df['posteam'] != '0']
 
 print(len(df))
 

@@ -19,8 +19,9 @@ def clean(training_df):
     training_df['ACoach'] = 'ACo' + training_df['ACoach'].astype(str)
     training_df['ADefense'] = 'ADef' + training_df['ADefense'].astype(str)
     training_df['AOffense'] = 'AOff' + training_df['AOffense'].astype(str)
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='home', 'posteam_type']=1
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='away', 'posteam_type']=0
+    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    training_df['posteam_type'] = training_df['posteam_type'].apply(int)
     
     training_df = pd.concat([training_df, pd.get_dummies(training_df['SType'])], axis=1)
     training_df = training_df.drop(columns=['SType'])
@@ -59,6 +60,8 @@ def throwOut(train_stats):
     for c in train_stats.columns.values.astype(str):
         if c == 'qb_kneel':
             train_stats = train_stats.drop(c, axis=1)
+        elif c == 'extra_point_result':
+           train_stats = train_stats.drop(c, axis=1)
         elif c == 'qb_spike':
            train_stats = train_stats.drop(c, axis=1)
         elif c == 'air_yards':
@@ -67,8 +70,8 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'pass_location':
             train_stats = train_stats.drop(c, axis=1)
-        #elif c == 'run_location':
-        #    train_stats = train_stats.drop(c, axis=1)
+        elif c == 'run_location':
+            train_stats = train_stats.drop(c, axis=1)
         elif c == 'kick_distance':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'timeout':
@@ -140,7 +143,7 @@ def throwOut(train_stats):
     return train_stats
 
 
-df = pd.read_csv('runLocation.csv')
+df = pd.read_csv('playType.csv')
 print(df.head())
 
 df.loc[df.WTemp == '39/53', 'WTemp'] = '46'
@@ -150,18 +153,29 @@ df = clean(df)
 #Throw Out stats that are 'illegal'
 df = throwOut(df)
 
+
+#Numeric Value for each play type
+#Pass       0
+#Runs       1
+#Field Goal 2
+#Punt       3
+df['play'] = 0
+df.loc[df.pass_attempt == 1, 'play'] = 0
+df.loc[df.rush_attempt == 1, 'play'] = 1
+df.loc[df.field_goal_attempt == 1, 'play'] = 2
+df.loc[df.punt_attempt == 1, 'play'] = 3
 df = df.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
 
-X = df.drop('run_location', axis=1)
-y = df['run_location']
+X = df.drop('play', axis=1)
+y = df['play']
 
 from sklearn.model_selection import train_test_split
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=5)
 
 from sklearn.ensemble import RandomForestClassifier
 
-random_forest = RandomForestClassifier(n_estimators=20, max_depth=20, random_state=1)
+random_forest = RandomForestClassifier(n_estimators=100, max_depth=120, random_state=6)
 
 random_forest.fit(X_train, y_train)
 
