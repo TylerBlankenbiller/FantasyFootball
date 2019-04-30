@@ -29,7 +29,7 @@ def prepare_data(data_file_name):
     #          'stalk_color_below_ring', 'veil_type', 'veil_color',
     #          'ring_number', 'ring_type', 'spore_print_color',
     #          'population', 'habitat']
-    df = pd.read_csv("test.csv", low_memory=False, index_col=0)
+    df = pd.read_csv("predict.csv", low_memory=False, index_col=0)
 
     # Entries with a '?' indicate a missing piece of data, and
     # these entries are dropped from our dataset.
@@ -123,7 +123,7 @@ def new_samples():
 
 if __name__ == "__main__":
 
-    MUSHROOM_DATA_FILE = "agaricus-lepiota.data"
+    MUSHROOM_DATA_FILE = "test.csv"
 
     # Prepare the mushroom data for TensorFlow by
     # creating two train / test CSV files.

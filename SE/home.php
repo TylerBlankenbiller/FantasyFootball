@@ -1,26 +1,24 @@
 <?php require_once("ratH.html"); ?>
 <tr class="leaderRow">
-	<td colspan=3>
-	</td>
-	<td colspan = 6>
+	<td colspan = 20>
 		<div class="titleCard">
 			Week 10 Fantasy Football Rankings
 		</div>
 	</td>
-	<td colspan=3>
-	</td>
 </tr>
 <tr class = "leaderRow">
+    <td colspan=1>
+	</td>
 	<td colspan=3>
 		<div class = "leaders">
 			<ul>
 				<li class = "leadTitle">QB</li>
-				<li class = "leadPic"><img src="Pics/WentzCarson.png" height="116" width="160"></li>
-				<li>1) Carson Wentz</li>
-				<li>2) Aaron Rodgers</li>
-				<li>3) Patrick Mahomes</li>
-				<li>4) Blake Bortles</li>
-				<li>5) Case Keenum</li>
+				<li class = "leadPic"><img src="Pics/Chiefs.png" height="138" width="138"></li>
+				<li>1) P.Mahomes</li>
+				<li>2) A.Rodgers</li>
+				<li>3) C.Wentz</li>
+				<li>4) B.Roethlisberger</li>
+				<li>5) C.Keenum</li>
 			</ul>
 		</div>
 	</td>
@@ -28,12 +26,12 @@
 		<div class = "leaders">
 			<ul>
 				<li class = "leadTitle">RB</li>
-				<li class = "leadPic"><img src="Pics/GurleyTodd.png" height="116" width="160"></li>
-				<li>1) Todd Gurley II</li>
-				<li>2) Saquon Barkley</li>
-				<li>3) Joe Mixon</li>
-				<li>4) Lesean McCoy</li>
-				<li>5) Dalvin Cook</li>
+				<li class = "leadPic"><img src="Pics/Rams.png" height="138" width="138"></li>
+				<li>1) T.Gurley II</li>
+				<li>2) S.Barkley</li>
+				<li>3) J.Mixon</li>
+				<li>4) L.McCoy</li>
+				<li>5) D.Cook</li>
 			</ul>
 		</div>
 	</td>
@@ -41,12 +39,12 @@
 		<div class = "leaders">
 			<ul>
 				<li class = "leadTitle">WR</li>
-				<li class = "leadPic"><img src="Pics/BrownAntonio.png" height="116" width="160"></li>
-				<li>1) Antonio Brown</li>
-				<li>2) Odell Beckham Jr.</li>
-				<li>3) Julio Jones</li>
-				<li>4) AJ Green</li>
-				<li>5) Tyreek Hill</li>
+				<li class = "leadPic"><img src="Pics/Steelers.png" height="138" width="138"></li>
+				<li>1) A.Brown</li>
+				<li>2) O.Beckham Jr.</li>
+				<li>3) J.Jones</li>
+				<li>4) A.Green</li>
+				<li>5) T.Hill</li>
 			</ul>
 		</div>
 	</td>
@@ -54,18 +52,14 @@
 		<div class = "leaders">
 			<ul>
 				<li class = "leadTitle">TE</li>
-				<li class = "leadPic"><img src="Pics/ErtzZach.png" height="116" width="160"></li>
-				<li>1) Zach Ertz</li>
-				<li>2) Travis Kelce</li>
-				<li>3) Rob Gronkoski</li>
-				<li>4) Eric Ebron</li>
-				<li>5) Trey Burton</li>
+				<li class = "leadPic"><img src="Pics/Chiefs.png" height="138" width="138"></li>
+				<li>1) T.Kelce</li>
+				<li>2) Z.Ertz</li>
+				<li>3) R.Gronkoski</li>
+				<li>4) E.Ebron</li>
+				<li>5) T.Burton</li>
 			</ul>
 		</div>
-	</td>
-</tr>
-<tr class = "leaderRow">
-	<td colspan=3>
 	</td>
 	<td colspan=3>
 		<div class = "leaders">
@@ -84,30 +78,28 @@
 		<div class = "leaders">
 			<ul>
 				<li class = "leadTitle">K</li>
-				<li class = "leadPic"><img src="Pics/ElliotJake.png" height="116" width="160"></li>
-				<li>1) Jake Elliot</li>
-				<li>2) Dan Bailey</li>
-				<li>3) Robbie Gould</li>
-				<li>4) Harrison Butker</li>
-				<li>5) Stephen Gostkowski</li>
+				<li class = "leadPicEnd"><img src="Pics/Eagles.png" height="138" width="138"></li>
+				<li>1) J.Elliot</li>
+				<li>2) D.Bailey</li>
+				<li>3) R.Gould</li>
+				<li>4) H.Butker</li>
+				<li>5) S.Gostkowski</li>
 			</ul>
 		</div>
 	</td>
-	<td colspan=3>
+	<td colspan=1>
 	</td>
 </tr>
 <tr class="pickRow">
-	<td colspan=3>
-	</td>
-	<td colspan = 6>
+	<td colspan = 20>
 		<div class="titleCard">
 			Picks of the Week
 		</div>
 	</td>
-	<td colspan=3>
-	</td>
 </tr>
 <tr class="pickRow">
+    <td colspan = 1>
+    </td>
 	<td colspan=3>
 		<div class = "menu">
 			<ul>
@@ -152,10 +144,8 @@
 			</ul>
 		</div>
 	</td>
-</tr>
-<tr class="pickNextRow">
 	<td colspan=3>
-		<div class = "pickNextRow">
+		<div class = "menu">
 			<ul>
 				<li><img src="Pics/Browns.png" height="100" width="100"></li>
 				<li class="notPicked">Browns</li>
@@ -166,7 +156,7 @@
 		</div>
 	</td>
 	<td colspan=3>
-		<div class = "pickNextRow">
+		<div class = "menu">
 			<ul>
 				<li><img src="Pics/Titans.png" height="100" width="100"></li>
 				<li class="notPicked">Titans</li>
@@ -176,6 +166,12 @@
 			</ul>
 		</div>
 	</td>
+    <td colspan=1>
+    </td>
+</tr>
+<tr class="pickNextRow">
+    <td colspan=1>
+    </td>
 	<td colspan=3>
 		<div class = "pickNextRow">
 			<ul>
@@ -198,8 +194,6 @@
 			</ul>
 		</div>
 	</td>
-</tr>
-<tr class="pickNextRow">
 	<td colspan=3>
 		<div class = "pickNextRow">
 			<ul>
@@ -244,9 +238,11 @@
 			</ul>
 		</div>
 	</td>
+    <td colspan=1>
+    </td>
 </tr>
 <tr class="pickNextRow">
-	<td colspan=3>
+	<td colspan=7>
 	</td>
 	<td colspan=3>
 		<div class = "pickNextRow">
@@ -262,15 +258,15 @@
 	<td colspan=3>
 		<div class = "pickNextRow">
 			<ul>
-				<li><img src="Pics/Steelers.png" height="100" width="100"></li>
+				<li class='images'><img src="Pics/Steelers.png" height="100" width="100"></li>
 				<li class="notPicked">Steelers</li>
 				<li class="vs">VS</li>
-				<li><img src="Pics/Panthers.png" height="100" width="100"></li>
+				<li class='images'><img src="Pics/Panthers.png" height="100" width="100"></li>
 				<li class="picked">Panthers  <img src="Pics/check.png" height="25" width="25"></li>
 			</ul>
 		</div>
 	</td>
-	<td colspan=3>
+	<td colspan=7>
 	</td>
 </tr>
 <?php require_once("footerT.html"); ?>

@@ -268,7 +268,8 @@ for idx in range(10):
     throw = throw.loc[(throw['play_type'] == 'pass') | (throw['play_type'] == 'qb_spike')]
     throw.loc[throw.sack == 1, 'yards_gained'] = 0
     throw['name'] = throw['passer_player_name']
-    throw = throw.groupby(['passer_player_name', 'game_id', 'posteam', 'defteam', 'name']).apply(throws)
+    throw['id'] = throw['passer_player_id']
+    throw = throw.groupby(['name', 'id', 'game_id', 'posteam', 'defteam', 'name']).apply(throws)
 
     throw.to_csv('qb_20'+num+'.csv')
     throw = pd.read_csv('qb_20'+num+'.csv', low_memory=False)
@@ -285,7 +286,8 @@ for idx in range(10):
     run['rAVG'] = run['runYards']/run['rattempts']
     run['rTD'] = run['touchdown']
     run['name'] = run['rusher_player_name']
-    run = run.groupby(['game_id', 'rusher_player_name', 'game_id', 'posteam', 'defteam', 'name']).apply(runs)
+    run['id'] = run['rusher_player_id']
+    run = run.groupby(['game_id', 'name', 'id', 'posteam', 'defteam', 'name']).apply(runs)
 
     run.to_csv('rb_20'+num+'.csv')
     run = pd.read_csv('rb_20'+num+'.csv', low_memory=False)
@@ -300,7 +302,8 @@ for idx in range(10):
     receiver = receiver.loc[(receiver['play_type'] == 'pass') | (receiver['play_type'] == 'qb_spike')]
     receiver.loc[receiver.sack == 1, 'yards_gained'] = 0
     receiver['name'] = receiver['receiver_player_name']
-    receiver = receiver.groupby(['game_id', 'receiver_player_name', 'name', 'game_id', 'posteam', 'defteam']).apply(catches)
+    receiver['id'] = receiver['receiver_player_id']
+    receiver = receiver.groupby(['game_id', 'name', 'id', 'posteam', 'defteam']).apply(catches)
 
     receiver.to_csv('wr_20'+num+'.csv')
     receiver = pd.read_csv('wr_20'+num+'.csv', low_memory=False)
@@ -326,7 +329,8 @@ for idx in range(10):
     kicker.loc[(kicker.kick_distance > 39) & (kicker.kick_distance <= 49) & (kicker.field_goal_result == 'made'), 'med'] += 1
     kicker.loc[(kicker.kick_distance >= 50) & (kicker.field_goal_result == 'made'), 'long'] += 1
     kicker['name'] = kicker['kicker_player_name']
-    kicker = kicker.groupby(['game_id', 'kicker_player_name', 'posteam', 'name', 'game_id', 'defteam']).apply(kicks)
+    kicker['id'] = kicker['kicker_player_id']
+    kicker = kicker.groupby(['game_id', 'name', 'posteam', 'name', 'id', 'defteam']).apply(kicks)
     kicker['percent'] = (kicker['short']+kicker['med']+kicker['long'])/kicker['attempt']
     kicker['PAT_percent'] = (kicker['PAT_Made'])/kicker['PAT_Attempt']
 
@@ -340,7 +344,7 @@ for idx in range(10):
     players = pd.concat([throw, run, receiver, kicker], axis=0, ignore_index=True)
     players['date'] = players['game_id'].astype(str).str[:-2].astype(np.int64)
     players['week'] = np.vectorize(checkWeek)(players['date'])
-    players = players.groupby(['week', 'date', 'game_id', 'name', 'game_id', 'posteam', 'defteam']).sum()
+    players = players.groupby(['week', 'date', 'game_id', 'name', 'id', 'posteam', 'defteam']).sum()
     players['year'] = '20'+num
     
     players['position'] = players['percent'].apply(lambda x: 'K' if x > 0 else 'FB')
@@ -353,7 +357,6 @@ for idx in range(10):
     #players['DATE'] = players['game_id'].apply(lambda x: str(x)[4:8])
     #players['WEEK'] = players.apply(lambda x: 1 if (x['year'] == 208) & (str(x['DATE'][0]) == '9') & (  
     
-    del players['game_id.1']
     players.to_csv('players_20'+num+'.csv')
     players = pd.read_csv('players_20'+num+'.csv', low_memory=False)
     out = players.to_json(orient='records')

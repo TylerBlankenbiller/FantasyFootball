@@ -1,0 +1,401 @@
+body{background-color: #f9f9f9;}
+h1{font-family: Helvetica; text-align: center}
+table { margin: auto; border: none; width = "100%"; } 
+table, th{font-family: Trajan; font-weight: bold; background-color: aliceBlue; font-size: 22px;}
+table, tbody{background-color: #f9f9f9; border = none; border-collapse:collapse;}
+h2{font-family: Ariel; font-size: 16px; font-weight: bold; color: black; overflow: hidden; white-space: nowrap;}
+.nonReq{color: black; display: inline;}
+p {font-family: Ariel; font-size: 18px; padding-left: 20%}
+h3{font-family: Ariel; font-size: 20px; color: black; overflow: hidden; white-space: nowrap; display: inline;}
+.req{color: black; font-weight: bold; }
+li{font-family: Helvetica; color: black; font-size: 16px; padding-top: 2px; padding-bottom: 2px;}
+ul, a:link{color: white; text-decoration:none;}
+ul, a:hover{color: orange;}
+ul, a:active{color: red;}
+a:hover{color: orange;}
+ul {list-style-type: none;}
+linkBG {bgcolor = "#ccffcc";}
+.foot {bgcolor = "lightblue"; align="center";}
+.hlink {font-family: Trajan; font-weight: bold; background-color: "#ccffcc"; font-size: 22px;}
+
+.missingReq{
+	color: red;
+	font-weight: bold;
+	font-family: Helvetica;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+.signIn{
+	font-family: Helvetica;
+	color: black;
+	font-weight: bold;
+	padding-top:50px;
+	padding-bottom: 0px;
+	padding-left:150px;
+	padding-right:150px;
+}
+.createAcc{
+	font-family: Helvetica;
+	color: black;
+	font-weight: bold;
+	padding-top: 50px;
+	padding-bottom: 0px;
+	padding-left:150px;
+	padding-right:150px;
+}
+.createField{
+	padding-left:150px;
+	padding-right:150px;
+	
+}
+.reqTop{
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left:150px;
+	padding-right:150px;
+	color: black;
+	font-weight: normal;
+	font-family: Helvetica;
+}
+.req{
+	padding-top: 20px;
+	padding-bottom: 0px;
+	padding-left:150px;
+	padding-right:150px;
+	color: black;
+	font-weight: normal;
+	font-family: Helvetica;
+}
+.reqHid{
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left:150px;
+	color: red;
+	font-weight: Bold;
+	font-family: Helvetica;
+}
+
+.menu {
+	text-align: center;
+	font-family: Helvetica;
+}
+.menu a:hover{
+	color: orange !important;
+}
+.menu a:visited {
+	color: white;
+}
+.totals	{
+			font-size: 20px;
+			color: black;
+			padding-left: 1%;
+			font-weight: bold;
+			padding-top: 12px;
+			padding-right: 50px;
+			padding-bottom: 12px;
+			overflow: hidden;
+			white-space: nowrap;
+		}
+.tValue	{
+			font-size: 20px;
+			color: black;
+			padding-right: 1%;
+			padding-top: 12px;
+			padding-bottom: 12px;
+			overflow: hidden;
+			white-space: nowrap;
+			
+		}
+.contactT	{
+				font-style: italic;
+				font-size: 20px;
+				color: black;
+				white-space: nowrap; 
+				font-weight:normal;
+				padding-top: 5px;
+				padding-bottom: 5px;
+				text-align: center;
+			}
+.contact	{
+				font-style: italic;
+				font-size: 20px;
+				color: black;
+				white-space: nowrap;
+				font-weight:normal;
+				font-style: normal;
+				padding-top: 5px;
+				padding-bottom: 5px;
+				text-align: center;
+			}
+.nameTitle	{
+				font-style: italic;
+				font-size: 20px;
+				color: black;
+				padding-left: 70px;
+				background-color: #bfff80;
+				border: none;
+			}
+			
+.leftName		{
+				font-size: 18px;
+				color: black;
+				padding-left: 20px;
+				vertical-align: middle;
+				
+				text-align: left;
+				padding-top: 5px;
+				padding-bottom: 5px;
+				padding-left: 70px;
+			}
+.name		{
+				font-size: 18px;
+				color: black;
+				padding-left: 20px;
+				vertical-align: middle;
+				text-align: center;
+				padding-top: 5px;
+				padding-bottom: 10px;
+				padding-left: 70px;
+			}
+.set	{
+			padding-left: 0px;
+		}
+.search	{
+			vertical-align: middle;
+			text-align: center;
+			font-size: 16px;
+			text-align: center;
+		}
+.title	{
+			padding-top: 12px;
+			padding-bottom: 12px;
+			font-size: 22px;
+			font-weight: bold;
+			text-align: center;
+			color: black;
+			margin: 20px;
+		}
+.drop {
+       position: relative;
+       display: inline-block;
+      }
+.drop-content {
+        position: absolute;
+		left: -56px;
+		display: none;
+		min-width: 360px;
+		text-align: left;
+	    z-index: 1;
+	    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+	    background-color: #f1f1f1;
+		background-clip: padding-box;
+}
+.dropbtn{
+        background-color: #2f9c2c;
+        padding: 16px;
+		color: white;
+		text-align: center;
+		font-weight: bold;
+		font-size: 22px;
+		border: none;
+		width: 100%;
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+		font-family: Helvetica;
+        }
+.dropbtn:hover{
+	color: orange;
+}
+
+.drop-content a:link{
+    color: black; 
+	text-decoration:none;    
+	       }
+.drop-content a:visited {
+	color: black;
+}
+.drop-content a:hover{
+	color: orange;
+	/*background-color: #606060;*/
+}
+.drop:hover .drop-content{
+    display: block;
+}
+.leaders{
+
+	position: relative;
+    width: 100%;
+    min-height: 1px;
+    /*padding-right: 15px;
+    padding-left: 15px;
+	min-width: 230px;*/
+}
+.leadTitle
+{
+	padding-left: 58px;
+	font-weight: 900;
+}
+.leadPic{
+	font-weight: 900;
+	padding-bottom: 16px;
+	padding-top: 11px;
+}
+.leaderRow
+{
+	background-color: white;
+}
+.vs
+{
+	text-align: center;
+	font-family: Helvetica;
+	padding-top: 15px;
+}
+.vs a:link{
+	color: black;
+}
+.matchUp {
+	padding-top: 5px;
+	padding-bottom: 5px;
+    display: inline-block;
+    text-align: center;
+	font-family: Helvetica;
+}
+.matchUpTD {
+	min-width:760px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+    text-align: center;
+	font-family: Helvetica;
+}
+.Pad {
+	padding-bottom: 50px;
+}
+.picked {
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+.notPicked {
+	padding-top: 11px;
+	padding-bottom: 0px;
+}
+.gameLog {
+	font-family: Helvetica;
+	padding-left: 0px;
+	padding-right: 0px;
+	color: white;
+	min-width: 620px;
+}
+.gameLogTurnOver {
+	font-family: Helvetica;
+	padding-left: 0px;
+	padding-right: 0px;
+	color: red;
+	min-width: 620px;
+}
+.gameLogScore {
+	font-family: Helvetica;
+	padding-left: 0px;
+	padding-right: 0px;
+	color: Gold;
+	min-width: 580px;
+}
+.gameLogTime {
+	font-family: Helvetica;
+	padding-left: 0px;
+	padding-right: 0px;
+	color: LimeGreen ;
+	min-width: 580px;
+	text-align: center;
+}
+
+.pickRow
+{
+	background-color: #d9e6fc;
+}
+.pickNextRow
+{
+	background-color: #d9e6fc;
+	text-align: center;
+	font-family: Helvetica;
+	padding-top: 70px;
+}
+.titleCard
+{
+	padding-top: 50px;
+	padding-bottom: 50px;
+	font-family: Helvetica;
+	font-weight: 1300;
+	font-size: 35px;
+	text-align: center;
+}
+.titleCardWhite
+{
+	background-color: white;
+	padding-top: 50px;
+	padding-bottom: 50px;
+	font-family: Helvetica;
+	font-weight: 1300;
+	font-size: 35px;
+	text-align: center;
+}
+.selectors
+{
+	font-family: Helvetica;
+	font-weight: 550;
+}
+.selectOptions {
+    float:left;
+    margin-left:15%;
+}
+.otherSelect {
+	float:left;
+	margin-left:-5%
+}
+.picksMatchUp {
+	white-space: nowrap;
+	text-align: center;
+	font-family: Helvetica;
+}
+.better {
+	color: #BFBF3F;
+	text-align: center;
+	font-family: Helvetica;
+	font-size: 16px;
+}
+.worse {
+	color: black;
+	text-align: center;
+	font-family: Helvetica;
+	font-size: 16px;
+}
+.same {
+	color: #6D6D6D;
+	text-align: center;
+	font-family: Helvetica;
+	font-size: 16px;
+}
+.stat {
+	color: black;
+	text-align: center;
+	font-family: Helvetica;
+	font-size: 16px;
+}
+.break
+{
+	background-color: #f9f9f9;
+	padding-bottom: 10px;
+	padding-top: 10px;
+}
+.table{
+	padding-top: 25px;
+	text-align: center;
+	font-family: Helvetica;
+	padding-bottom: 50px;
+}
+.statTable{
+	padding-top: 25px;
+	text-align: left;
+	font-family: Helvetica;
+	padding-bottom: 50px;
+}

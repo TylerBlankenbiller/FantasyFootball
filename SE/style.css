@@ -1,19 +1,18 @@
-body{background-color: #f9f9f9;}
-h1{font-family: Helvetica; text-align: center}
+h1{font-family: Helvetica; text-align: center; color:white;}
 table { margin: auto; border: none; width = "100%"; } 
-table, th{font-family: Trajan; font-weight: bold; background-color: aliceBlue; font-size: 22px;}
-table, tbody{background-color: #f9f9f9; border = none; border-collapse:collapse;}
-h2{font-family: Ariel; font-size: 16px; font-weight: bold; color: black; overflow: hidden; white-space: nowrap;}
-.nonReq{color: black; display: inline;}
-p {font-family: Ariel; font-size: 18px; padding-left: 20%}
-h3{font-family: Ariel; font-size: 20px; color: black; overflow: hidden; white-space: nowrap; display: inline;}
-.req{color: black; font-weight: bold; }
-li{font-family: Helvetica; color: black; font-size: 16px; padding-top: 2px; padding-bottom: 2px; padding-right: 20px; padding-left: 20px;}
+table, th{font-family: Trajan; font-weight: bold; font-size: 22px;}
+table, tbody{border = none; border-collapse:collapse;}
+h2{font-family: Ariel; font-size: 16px; font-weight: bold; color: white; overflow: hidden; white-space: nowrap;}
+.nonReq{color: white; display: inline;}
+p {font-family: Ariel; font-size: 18px;}
+h3{font-family: Ariel; font-size: 20px; color: white; overflow: hidden; white-space: nowrap; display: inline;}
+.req{color: white; font-weight: bold; }
+li{font-family: Helvetica; color: white; font-size: 16px; padding-top: 2px; padding-bottom: 2px; text-align:left; left:-20px;}
 ul, a:link{color: white; text-decoration:none;}
 ul, a:hover{color: orange;}
 ul, a:active{color: red;}
 a:hover{color: orange;}
-ul {list-style-type: none;}
+ul {list-style-type: none; text-align:left;}
 linkBG {bgcolor = "#ccffcc";}
 .foot {bgcolor = "lightblue"; align="center";}
 .hlink {font-family: Trajan; font-weight: bold; background-color: "#ccffcc"; font-size: 22px;}
@@ -27,7 +26,7 @@ linkBG {bgcolor = "#ccffcc";}
 }
 .signIn{
 	font-family: Helvetica;
-	color: black;
+	color: white;
 	font-weight: bold;
 	padding-top:50px;
 	padding-bottom: 0px;
@@ -36,7 +35,7 @@ linkBG {bgcolor = "#ccffcc";}
 }
 .createAcc{
 	font-family: Helvetica;
-	color: black;
+	color: white;
 	font-weight: bold;
 	padding-top: 50px;
 	padding-bottom: 0px;
@@ -53,7 +52,7 @@ linkBG {bgcolor = "#ccffcc";}
 	padding-bottom: 0px;
 	padding-left:150px;
 	padding-right:150px;
-	color: black;
+	color: white;
 	font-weight: normal;
 	font-family: Helvetica;
 }
@@ -62,7 +61,7 @@ linkBG {bgcolor = "#ccffcc";}
 	padding-bottom: 0px;
 	padding-left:150px;
 	padding-right:150px;
-	color: black;
+	color: white;
 	font-weight: normal;
 	font-family: Helvetica;
 }
@@ -87,7 +86,7 @@ linkBG {bgcolor = "#ccffcc";}
 }
 .totals	{
 			font-size: 20px;
-			color: black;
+			color: white;
 			padding-left: 1%;
 			font-weight: bold;
 			padding-top: 12px;
@@ -98,7 +97,7 @@ linkBG {bgcolor = "#ccffcc";}
 		}
 .tValue	{
 			font-size: 20px;
-			color: black;
+			color: white;
 			padding-right: 1%;
 			padding-top: 12px;
 			padding-bottom: 12px;
@@ -109,7 +108,7 @@ linkBG {bgcolor = "#ccffcc";}
 .contactT	{
 				font-style: italic;
 				font-size: 20px;
-				color: black;
+				color: white;
 				white-space: nowrap; 
 				font-weight:normal;
 				padding-top: 5px;
@@ -119,7 +118,7 @@ linkBG {bgcolor = "#ccffcc";}
 .contact	{
 				font-style: italic;
 				font-size: 20px;
-				color: black;
+				color: white;
 				white-space: nowrap;
 				font-weight:normal;
 				font-style: normal;
@@ -130,15 +129,14 @@ linkBG {bgcolor = "#ccffcc";}
 .nameTitle	{
 				font-style: italic;
 				font-size: 20px;
-				color: black;
+				color: white;
 				padding-left: 70px;
-				background-color: #bfff80;
 				border: none;
 			}
 			
 .leftName		{
 				font-size: 18px;
-				color: black;
+				color: white;
 				padding-left: 20px;
 				vertical-align: middle;
 				
@@ -172,26 +170,30 @@ linkBG {bgcolor = "#ccffcc";}
 			font-size: 22px;
 			font-weight: bold;
 			text-align: center;
-			color: black;
+			color: white;
 			margin: 20px;
 		}
 .drop {
        position: relative;
        display: inline-block;
+       background-color: #1f1f1f;
       }
 .drop-content {
         position: absolute;
-		left: -56px;
+        color: white;
+		left: -18px;
 		display: none;
-		min-width: 360px;
+		min-width: 280px;
 		text-align: left;
 	    z-index: 1;
 	    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-	    background-color: #f1f1f1;
+	    background-color: #1f1f1f;
 		background-clip: padding-box;
+        padding-left:10px;
+        padding-bottom: 10px;
 }
 .dropbtn{
-        background-color: #12174f;
+        background-color: #1f1f1f;
         padding: 16px;
 		color: white;
 		text-align: center;
@@ -209,11 +211,11 @@ linkBG {bgcolor = "#ccffcc";}
 }
 
 .drop-content a:link{
-    color: black; 
+    color: white; 
 	text-decoration:none;    
 	       }
 .drop-content a:visited {
-	color: black;
+	color: white;
 }
 .drop-content a:hover{
 	color: orange;
@@ -224,16 +226,17 @@ linkBG {bgcolor = "#ccffcc";}
 }
 .leaders{
 
-	position: relative;
+	/*position: relative;*/
     width: 100%;
     min-height: 1px;
-    padding-right: 15px;
+    /*padding-right: 15px;
     padding-left: 15px;
-	min-width: 230px;
+	min-width: 230px;*/
 }
 .leadTitle
 {
-	padding-left: 87px;
+	/*padding-left: 58px;*/
+    text-align: center;
 	font-weight: 900;
 }
 .leadPic{
@@ -243,16 +246,15 @@ linkBG {bgcolor = "#ccffcc";}
 }
 .leaderRow
 {
-	background-color: white;
 }
 .vs
 {
-	text-align: center;
 	font-family: Helvetica;
 	padding-top: 15px;
+    padding-right:10px;
 }
 .vs a:link{
-	color: black;
+	color: white;
 }
 .matchUp {
 	padding-top: 5px;
@@ -311,17 +313,16 @@ linkBG {bgcolor = "#ccffcc";}
 
 .pickRow
 {
-	background-color: #d9e6fc;
 }
 .pickNextRow
 {
-	background-color: #d9e6fc;
 	text-align: center;
 	font-family: Helvetica;
 	padding-top: 70px;
 }
 .titleCard
 {
+    color:white;
 	padding-top: 50px;
 	padding-bottom: 50px;
 	font-family: Helvetica;
@@ -331,7 +332,6 @@ linkBG {bgcolor = "#ccffcc";}
 }
 .titleCardWhite
 {
-	background-color: white;
 	padding-top: 50px;
 	padding-bottom: 50px;
 	font-family: Helvetica;
@@ -341,10 +341,171 @@ linkBG {bgcolor = "#ccffcc";}
 }
 .selectors
 {
+    /*display: inline;*/
 	font-family: Helvetica;
 	font-weight: 550;
+    color: white;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 5px;
+    padding-right:5px;
+}
+.selectorsGreen
+{
+	font-family: Helvetica;
+	font-weight: 550;
+    color: white;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 5px;
+    padding-right:5px;
+}
+tr:nth-child(odd) .selectorsGreen
+{
+    background-color:#2f9c2c;
+}
+tr:nth-child(even) .selectorsGreen
+{
+    background-color:#257c22;
+}
+td:hover .selectorsGreen{
+			background-color: #a1a1a1;
+}
+.select
+{
+	font-family: Helvetica;
+	font-weight: 200;
+    color: white;
+    text-align:left;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 5px;
+    padding-right:5px;
+}
+.selectGreen
+{
+	font-family: Helvetica;
+	font-weight: 200;
+    color: white;
+    text-align:left;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 5px;
+    padding-right:5px;
+}
+tr:nth-child(odd) .selectGreen
+{
+    background-color:#2f9c2c;
+}
+tr:nth-child(even) .selectGreen
+{
+    background-color:#257c22;
+}
+td:hover .selectGreen{
+			background-color: #a1a1a1;
+}
+.selectRed
+{
+	font-family: Helvetica;
+	font-weight: 200;
+    color: white;
+    text-align:left;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 5px;
+    padding-right:5px;
+}
+.selectRed
+{
+	font-family: Helvetica;
+	font-weight: 200;
+    color: white;
+    text-align:left;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 5px;
+    padding-right:5px;
+}
+tr:nth-child(odd) .selectRed
+{
+    background-color:#ce3535;
+}
+tr:nth-child(even) .selectRed
+{
+    background-color:#9c2c2c;
+}
+td:hover .selectRed{
+			background-color: #a1a1a1;
+}
+.selectorsRed
+{
+	font-family: Helvetica;
+	font-weight: 550;
+    color: white;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 5px;
+    padding-right:5px;
+}
+tr:nth-child(odd) .selectorsRed
+{
+    background-color:#ce3535;
+}
+tr:nth-child(even) .selectorsRed
+{
+    background-color:#9c2c2c;
+}
+td:hover .selectorsRed{
+			background-color: #a1a1a1;
+}
+.selectorsYellow
+{
+	font-family: Helvetica;
+	font-weight: 550;
+    color: white;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 5px;
+    padding-right:5px;
+}
+tr:nth-child(odd) .selectorsYellow
+{
+    background-color:#ba9f32
+}
+tr:nth-child(even) .selectorsYellow
+{
+    background-color:#a38c2f; 
+}
+td:hover .selectorsYellow{
+			background-color: #a1a1a1;
+}
+.selectYellow
+{
+	font-family: Helvetica;
+	font-weight: 300;
+    color: white;
+    text-align:left;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 5px;
+    padding-right:5px;
+}
+tr:nth-child(odd) .selectYellow
+{
+    background-color:#ba9f32
+}
+tr:nth-child(even) .selectYellow
+{
+    background-color:#a38c2f;
+}
+.selectYellow:hover{
+			background-color: #a1a1a1; !important
+}
+.dropDown {
+    display: inline-block;
 }
 .selectOptions {
+    display: inline;
     float:left;
     margin-left:15%;
 }
@@ -364,7 +525,7 @@ linkBG {bgcolor = "#ccffcc";}
 	font-size: 16px;
 }
 .worse {
-	color: black;
+	color: white;
 	text-align: center;
 	font-family: Helvetica;
 	font-size: 16px;
@@ -376,7 +537,7 @@ linkBG {bgcolor = "#ccffcc";}
 	font-size: 16px;
 }
 .stat {
-	color: black;
+	color: white;
 	text-align: center;
 	font-family: Helvetica;
 	font-size: 16px;
@@ -399,3 +560,64 @@ linkBG {bgcolor = "#ccffcc";}
 	font-family: Helvetica;
 	padding-bottom: 50px;
 }
+
+
+tr:nth-child(even) {background-color: #1f1f1f} 
+/*td:nth-child(7) {background-color: #2f9c2c}
+td:nth-child(10) {background-color: #2f9c2c} 
+td:nth-child(12) {background-color: #2f9c2c} 
+td:nth-child(15) {background-color: #2f9c2c} 
+td:nth-child(17) {background-color: #9c2c2c} 
+td:nth-child(18) {background-color: #a38c2f; font-weight: bold}*/
+td:hover{
+			background-color: #a1a1a1;
+}
+/* demo styles */
+
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,500,300,700);
+body{
+  background: #2c2c2c;
+  font-family: 'Roboto', sans-serif;
+}
+section{
+  margin: 50px;
+}
+
+
+/* follow me template */
+.made-with-love {
+  margin-top: 40px;
+  padding: 10px;
+  clear: left;
+  text-align: center;
+  font-size: 10px;
+  font-family: arial;
+  color: #fff;
+}
+.made-with-love i {
+  font-style: normal;
+  color: #F50057;
+  font-size: 14px;
+  position: relative;
+  top: 2px;
+}
+.made-with-love a {
+  color: #fff;
+  text-decoration: none;
+}
+.made-with-love a:hover {
+  text-decoration: underline;
+}
+
+
+/* for custom scrollbar for webkit browser
+
+::-webkit-scrollbar {
+    width: 6px;
+} 
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+} 
+::-webkit-scrollbar-thumb {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+}*/
