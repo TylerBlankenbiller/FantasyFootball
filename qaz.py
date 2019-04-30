@@ -1,4 +1,24 @@
+#Predict what play call will be made using preplay NFL data
+#Program Starts at line 159, couple of functions
+#are declared above it
+
+from __future__ import absolute_import, division, print_function
+
+import pathlib
+
+import numpy as np
+import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
+import os
+
+from sklearn.model_selection import train_test_split
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+import gc
+from sklearn import preprocessing
+from sklearn import svm
 
 
 def clean(training_df):
@@ -67,8 +87,8 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'pass_location':
             train_stats = train_stats.drop(c, axis=1)
-        #elif c == 'run_location':
-        #    train_stats = train_stats.drop(c, axis=1)
+        elif c == 'run_location':
+            train_stats = train_stats.drop(c, axis=1)
         elif c == 'kick_distance':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'timeout':
@@ -137,46 +157,120 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'timeout_team':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'extra_point_result':
-            train_stats = train_stats.drop(c, axis=1)
     return train_stats
 
+#with tf.device("/device:GPU:0"):
+#running on my laptop, so had to switch GPU with something
+if 1 == 1:
+    tf.enable_eager_execution()
 
-df = pd.read_csv('runLocation.csv')
-print(df.head())
+    print(tf.__version__)
+    
+    #load data
+    training_df: pd.DataFrame = pd.read_csv("playType.csv", low_memory=False)
+    training_df.loc[training_df.WTemp == '39/53', 'WTemp'] = '46'
+    
+    
+    #Numeric Value for each play type
+    #Pass       0
+    #Runs       1
+    #Field Goal 2
+    #Punt       3
+    training_df['play'] = 0
+    training_df.loc[training_df.pass_attempt == 1, 'play'] = 0
+    training_df.loc[training_df.rush_attempt == 1, 'play'] = 1
+    training_df.loc[training_df.field_goal_attempt == 1, 'play'] = 2
+    training_df.loc[training_df.punt_attempt == 1, 'play'] = 3
+    
+    
+    #Change String stats to dummy columns
+    training_df = clean(training_df)
+    #Throw Out stats that are 'illegal'
+    training_df = throwOut(training_df)
 
-df.loc[df.WTemp == '39/53', 'WTemp'] = '46'
+    #Change Type of Dataframe to type float
+    dataset = training_df.copy()
+    del training_df
+    print(dataset.tail())
+    gc.collect()
+    print(dataset)
+    dataset = dataset.astype(float)
 
-#Change String stats to dummy columns
-df = clean(df)
-#Throw Out stats that are 'illegal'
-df = throwOut(df)
+    #Put play types into their own data frames
+    #This helps ensure our test set is evenly distributed of each kind of play
+    passer = dataset.loc[dataset.pass_attempt == 1]
+    passer = passer.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
+    train_pass = passer.sample(frac=0.9,random_state=0)
+    test_pass = passer.drop(train_pass.index)
+    run = dataset.loc[dataset.rush_attempt == 1]
+    run = run.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
+    train_run = run.sample(frac=0.9,random_state=0)
+    test_run = run.drop(train_run.index)
+    goal = dataset.loc[dataset.field_goal_attempt == 1]
+    goal = goal.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
+    train_goal = goal.sample(frac=0.9,random_state=0)
+    test_goal = goal.drop(train_goal.index)
+    punt = dataset.loc[dataset.punt_attempt == 1]
+    punt = punt.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
+    train_punt = punt.sample(frac=0.9,random_state=0)
+    test_punt = punt.drop(train_punt.index)
+    
+    #Every Printed Length should be the Same
+    print('Length of each test dataset of each type of play')
+    print(len(test_punt))
+    print(len(test_goal))
+    print(len(test_run))
+    print(len(test_pass))
 
-#df = df.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
+    dftrain = pd.concat([train_pass, train_run, train_punt, train_goal])
+    dfTest = pd.concat([train_pass, train_run, train_punt, train_goal])
+    
+    dftrain = pd.concat([dftrain, dfTest])
+    
+    X = np.array(dftrain.drop(['play'],1))
+    y = np.array(dftrain['play'])
+    
+    X = preprocessing.scale(X)
+    
+    #X=X[:-forecast_out+1]
+    #dftrain.dropna(inplace=True)
+    #y = np.array
+    print(len(X))
+    print(len(y))
+    print("X, Y^^^^")
+    
+    def norm(x):
+        return (x - X['mean']/X['std'])
+    
+    #X = norm(X)
+    
+    model = keras.Sequential([
+            layers.Dense(800, activation='relu', input_shape=[len(X)]),
+            layers.Dense(400, activation='relu'),
+            layers.Dense(64),
+            layers.Dense(4, activation=tf.nn.softmax)])
+            
+    model.compile(loss='sparse_categorical_crossentropy',
+                    optimizer='adam',
+                    metrics=['accuracy'])
+                    
+    model.fit(X, y, batch_size=32, validation_split=0.01)
+    
 
-df['location'] = 0
-df.loc[df.run_location == 'left', 'location'] = 1
-df.loc[df.run_location == 'middle', 'location'] = 2
-df.loc[df.run_location == 'right', 'location'] = 3
-df = df.drop(columns=['run_location'])
 
-X = df.drop('location', axis=1)
-y = df['location']
+    s = pd.Series()
+    for i in range(len(test_predictions)):
+        s = s.set_value(i, np.argmax(test_predictions[i]))
 
-from sklearn.model_selection import train_test_split
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
-
-from sklearn.ensemble import RandomForestClassifier
-
-random_forest = RandomForestClassifier(n_estimators=50, max_depth=50, random_state=1)
-
-random_forest.fit(X_train, y_train)
-
-from sklearn.metrics import accuracy_score
-
-y_predict = random_forest.predict(X_test)
-print("Accuracy")
-ab = accuracy_score(y_test, y_predict)
- 
-print(ab) 
+    #Plot Graph of Predictions VS Actual Values
+    #Vertical Line is a correct prediction
+    plt.scatter(test_labels, s) 
+    plt.xlabel('True Values [Play Type]')
+    plt.ylabel('Predictions [Play Type]')
+    plt.axis('equal')
+    plt.axis('square')
+    plt.xlim([0,plt.xlim()[1]])
+    plt.ylim([0,plt.ylim()[1]])
+    _ = plt.plot([0, 200], [0, 200])
+    plt.show()
+        

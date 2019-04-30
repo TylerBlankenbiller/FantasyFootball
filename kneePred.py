@@ -57,9 +57,9 @@ def throwOut(train_stats):
         yards gained, etc.)
     '''
     for c in train_stats.columns.values.astype(str):
-        if c == 'qb_kneel':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'qb_spike':
+        #if c == 'qb_kneel':
+        #    train_stats = train_stats.drop(c, axis=1)
+        if c == 'qb_spike':
            train_stats = train_stats.drop(c, axis=1)
         elif c == 'air_yards':
             train_stats = train_stats.drop(c, axis=1)
@@ -67,8 +67,8 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'pass_location':
             train_stats = train_stats.drop(c, axis=1)
-        #elif c == 'run_location':
-        #    train_stats = train_stats.drop(c, axis=1)
+        elif c == 'run_location':
+            train_stats = train_stats.drop(c, axis=1)
         elif c == 'kick_distance':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'timeout':
@@ -142,26 +142,24 @@ def throwOut(train_stats):
     return train_stats
 
 
-df = pd.read_csv('runLocation.csv')
+df = pd.read_csv('knee.csv')
 print(df.head())
 
 df.loc[df.WTemp == '39/53', 'WTemp'] = '46'
+
+#df['try'] = 0
+#df = df.drop(columns=['extra_point_attempt', 'two_point_attempt'])
+
 
 #Change String stats to dummy columns
 df = clean(df)
 #Throw Out stats that are 'illegal'
 df = throwOut(df)
 
-#df = df.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
+df = df.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
 
-df['location'] = 0
-df.loc[df.run_location == 'left', 'location'] = 1
-df.loc[df.run_location == 'middle', 'location'] = 2
-df.loc[df.run_location == 'right', 'location'] = 3
-df = df.drop(columns=['run_location'])
-
-X = df.drop('location', axis=1)
-y = df['location']
+X = df.drop('qb_kneel', axis=1)
+y = df['qb_kneel']
 
 from sklearn.model_selection import train_test_split
 
@@ -176,6 +174,7 @@ random_forest.fit(X_train, y_train)
 from sklearn.metrics import accuracy_score
 
 y_predict = random_forest.predict(X_test)
+print(y_predict)
 print("Accuracy")
 ab = accuracy_score(y_test, y_predict)
  

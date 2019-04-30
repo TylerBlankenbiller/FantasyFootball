@@ -137,10 +137,12 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'timeout_team':
             train_stats = train_stats.drop(c, axis=1)
+        elif c == 'extra_point_result':
+            train_stats = train_stats.drop(c, axis=1)
     return train_stats
 
 
-df = pd.read_csv('testLast.csv')
+df = pd.read_csv('playType.csv')
 print(df.head())
 
 df.loc[df.WTemp == '39/53', 'WTemp'] = '46'
@@ -157,10 +159,10 @@ df = throwOut(df)
 #Field Goal 2
 #Punt       3
 df['play'] = 0
-df.loc[df.pass_attempt == 1, 'play'] = 0
-df.loc[df.rush_attempt == 1, 'play'] = 1
-df.loc[df.field_goal_attempt == 1, 'play'] = 2
-df.loc[df.punt_attempt == 1, 'play'] = 3
+df.loc[df.pass_attempt == 1, 'play'] = 1
+df.loc[df.rush_attempt == 1, 'play'] = 2
+df.loc[df.field_goal_attempt == 1, 'play'] = 3
+df.loc[df.punt_attempt == 1, 'play'] = 4
 df = df.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
 
 X = df.drop('play', axis=1)
@@ -172,7 +174,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
 from sklearn.ensemble import RandomForestClassifier
 
-random_forest = RandomForestClassifier(n_estimators=500, max_depth=120, random_state=1)
+random_forest = RandomForestClassifier(n_estimators=50, max_depth=50, random_state=1)
 
 random_forest.fit(X_train, y_train)
 

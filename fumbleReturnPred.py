@@ -19,10 +19,10 @@ def clean(training_df):
     training_df['posteam'] = 'P' + training_df['posteam'].astype(str)
     training_df['defteam'] = 'D' + training_df['defteam'].astype(str)
     training_df['pass_location'] = 'Pass' + training_df['pass_location'].astype(str)
-    #training_df['run_location'] = 'Run' + training_df['run_location'].astype(str)
+    training_df['run_location'] = 'Run' + training_df['run_location'].astype(str)
     training_df['extra_point_result'] = 'Extra' + training_df['extra_point_result'].astype(str)
     training_df['two_point_conv_result'] = 'Two' + training_df['two_point_conv_result'].astype(str)
-    #training_df['run_gap'] = 'Gap' + training_df['run_gap'].astype(str)
+    training_df['run_gap'] = 'Gap' + training_df['run_gap'].astype(str)
     training_df['field_goal_result'] = 'Field' + training_df['field_goal_result'].astype(str)
     training_df['timeout_team'] = 'TO' + training_df['timeout_team'].astype(str)
     #training_df['td_team'] = 'TD' + training_df['td_team'].astype(str)
@@ -80,19 +80,19 @@ def clean(training_df):
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['td_team'])], axis=1)
     #training_df = training_df.drop(columns=['td_team'])
     timeOuts = list(pd.get_dummies(training_df['timeout_team']).columns.values)#############################################3
-    #training_df = pd.concat([training_df, pd.get_dummies(training_df['timeout_team'])], axis=1)
-    training_df = training_df.drop(columns=['timeout_team'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['timeout_team'])], axis=1)
+    #training_df = training_df.drop(columns=['timeout_team'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['two_point_conv_result'])], axis=1)
     training_df = training_df.drop(columns=['two_point_conv_result'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['extra_point_result'])], axis=1)
     training_df = training_df.drop(columns=['extra_point_result'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['field_goal_result'])], axis=1)
     training_df = training_df.drop(columns=['field_goal_result'])
-    #training_df = pd.concat([training_df, pd.get_dummies(training_df['run_gap'])], axis=1)
-    #training_df = training_df.drop(columns=['run_gap'])
-    #training_df = pd.concat([training_df, pd.get_dummies(training_df['run_location'])], axis=1)
-    #training_df = training_df.drop(columns=['run_location'])
-    #training_df = pd.concat([training_df, pd.get_dummies(training_df['pass_location'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['run_gap'])], axis=1)
+    training_df = training_df.drop(columns=['run_gap'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['run_location'])], axis=1)
+    training_df = training_df.drop(columns=['run_location'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['pass_location'])], axis=1)
     training_df = training_df.drop(columns=['pass_location'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['defteam'])], axis=1)
     training_df = training_df.drop(columns=['defteam'])
@@ -157,18 +157,18 @@ def throws(train_stats):
         #print(type(c))
         #if c == '0':
         #    train_stats = train_stats.drop(c, axis=1)
-        if c == 'yards_gained':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'qb_kneel':
+        #if c == 'yards_gained':
+        #    train_stats = train_stats.drop(c, axis=1)
+        if c == 'qb_kneel':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'qb_spike':
             train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('Pass'):
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'air_yards':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'yards_after_catch':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'air_yards':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'yards_after_catch':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('Run'):
             train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('Gap'):
@@ -187,54 +187,54 @@ def throws(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('TD'):
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'first_down_rush':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'first_down_pass':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'third_down_converted':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'third_down_failed':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'fourth_down_converted':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'fourth_down_failed':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'incomplete_pass':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'interception':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'safety':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'fumble_lost':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'first_down_rush':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'first_down_pass':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'third_down_converted':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'third_down_failed':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'fourth_down_converted':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'fourth_down_failed':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'incomplete_pass':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'interception':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'safety':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'fumble_lost':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'own_kickoff_recovery_td':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'qb_hit':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'rush_attempt':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'pass_attempt':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'sack':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'touchdown':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'pass_touchdown':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'rush_touchdown':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'qb_hit':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'rush_attempt':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'pass_attempt':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'sack':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'touchdown':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'pass_touchdown':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'rush_touchdown':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'extra_point_attempt':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'two_point_attempt':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'field_goal_attempt':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'punt_attempt':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'fumble':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'complete_pass':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'field_goal_attempt':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'punt_attempt':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'fumble':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'complete_pass':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('Pass2'):
             train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('Rec'):
@@ -245,12 +245,12 @@ def throws(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('fum'):
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'fumble_recovery_1_yards':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'fumble_recovery_1_yards':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'return_yards':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'duration':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'duration':
+        #    train_stats = train_stats.drop(c, axis=1)
     return train_stats
 
 def throwOut(train_stats):
@@ -259,34 +259,34 @@ def throwOut(train_stats):
         #print(type(c))
         #if c == '0':
         #    train_stats = train_stats.drop(c, axis=1)
-        #if c == 'yards_gained':
-        #    train_stats = train_stats.drop(c, axis=1)
+        if c == 'yards_gained':
+            train_stats = train_stats.drop(c, axis=1)
         if c == 'qb_kneel':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'qb_spike':
            train_stats = train_stats.drop(c, axis=1)
-        elif c.startswith('Pass'):
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'air_yards':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'yards_after_catch':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c.startswith('Run'):
-            train_stats = train_stats.drop(c, axis=1)
-        elif c.startswith('Gap'):
-            train_stats = train_stats.drop(c, axis=1)
-        elif c.startswith('Field'):
-           train_stats = train_stats.drop(c, axis=1)
+        #elif c.startswith('Pass'):
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'air_yards':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'yards_after_catch':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c.startswith('Run'):
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c.startswith('Gap'):
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c.startswith('Field'):
+        #   train_stats = train_stats.drop(c, axis=1)
         elif c == 'kick_distance':
             train_stats = train_stats.drop(c, axis=1)
-        elif c.startswith('Extra'):
-            train_stats = train_stats.drop(c, axis=1)
-        elif c.startswith('Two'):
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c.startswith('Extra'):
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c.startswith('Two'):
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'timeout':
             train_stats = train_stats.drop(c, axis=1)
-        elif c.startswith('TO'):
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c.startswith('TO'):
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('TD'):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'first_down_rush':
@@ -347,12 +347,12 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('fum'):
            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'fumble_recovery_1_yards':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'fumble_recovery_1_yards':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'return_yards':
            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'duration':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'duration':
+        #    train_stats = train_stats.drop(c, axis=1)
         return train_stats
 
 tf.enable_eager_execution()
@@ -369,25 +369,48 @@ if 1 == 1:
 
     print(tf.__version__)
     #test.csv!!!!!!!!!!!!!!!!!!!!!!!!!!!@#@!#@!#@!#@!#!!@predict
-    training_df: pd.DataFrame = pd.read_csv("rushYards.csv", low_memory=False)
+    training_df: pd.DataFrame = pd.read_csv("fumble.csv", low_memory=False)
     training_df.loc[training_df.WTemp == '39/53', 'WTemp'] = 46
     #training_df = training_df.loc[training_df['posteam'] != 0]
     #training_df = training_df.drop(columns=['game_id', 'THRpasser_player_id', 'RECreceiver_player_id', 'RSHrusher_player_id', 'KICKkicker_player_id'])
-    training_df['location'] = 0
-    training_df.loc[training_df.run_location == 'left', 'location'] = 1
-    training_df.loc[training_df.run_location == 'middle', 'location'] = 2
-    training_df.loc[training_df.run_location == 'right', 'location'] = 3
-    training_df = training_df.drop(columns=['run_location'])
     
-    training_df['gap'] = 0
-    training_df.loc[training_df.run_gap == 'end', 'gap'] = 1
-    training_df.loc[training_df.run_gap == 'tackle', 'gap'] = 2
-    training_df.loc[training_df.run_gap == 'gaurd', 'gap'] = 3
-    training_df = training_df.drop(columns=['run_gap'])
+    
     
     training_df = clean(training_df)
     training_df = throwOut(training_df)
-    training_df = training_df.loc[training_df.rush_attempt == 1]
+    training_df = training_df.loc[training_df.pass_attempt == 1]
+    training_df = training_df.loc[training_df.incomplete_pass == 0]
+    #training_df.to_csv('wrong.csv')
+
+    
+    
+
+    ################################################################################################
+    # Create some variables.
+    #v1 = tf.get_variable("v1", shape=[3], initializer = tf.zeros_initializer)
+    #v2 = tf.get_variable("v2", shape=[5], initializer = tf.zeros_initializer)
+
+    #inc_v1 = v1.assign(v1+1)
+    #dec_v2 = v2.assign(v2-1)
+
+    # Add an op to initialize the variables.
+    #init_op = tf.global_variables_initializer()
+
+    ## Add ops to save and restore all the variables.
+    #saver = tf.train.Saver()
+
+    # Later, launch the model, initialize the variables, do some work, and save the
+    # variables to disk.
+    #with tf.Session() as sess:
+    #    sess.run(init_op)
+    #    # Do some work with the model.
+    #    inc_v1.op.run()
+    #    dec_v2.op.run()
+    #    # Save the variables to disk.
+    #    save_path = saver.save(sess, "/tmp/model.ckpt")
+    #    print("Model saved in path: %s" % save_path)
+    #    ###########################################################################################
+
 
     training_df = training_df.astype(float)
     dataset = training_df.copy()
@@ -403,32 +426,34 @@ if 1 == 1:
     del dataset
     gc.collect()
     print("good")
-
+    #sns.pairplot(train_dataset[["game_seconds_remaining", "drive", "ydstogo", "yards_gained"]], diag_kind="kde")
+    #plt.show()
     print("gooder")
     train_stats = train_dataset.describe()
-    print("goodest")
-    
-    
-    
-    #train_stats = throwOut(train_stats)   
-    train_stats = train_stats.pop('yards_gained')
-    
-    
+    train_stats.pop("fumble_recovery_1_yards")
     train_stats = train_stats.transpose()
     print(train_stats)
 
-    train_labels = train_dataset
-    test_labels = train_dataset
-    train_labels = train_dataset.pop('yards_gained')
-    test_labels = test_dataset.pop('yards_gained')
+    train_labels = train_dataset.pop('fumble_recovery_1_yards')
+    test_labels = test_dataset.pop('fumble_recovery_1_yards')
+    #train_labels = throwOut(train_labels)   
+    #test_labels = throwOut(test_labels)   
 
+    #train_labels = train_dataset.pop(Aoff)
+
+    #def norm(x):
+        #return (x - x['yards_gained'].sum()/x['yards_gained'].count() / train_stats['yards_gained'].std()
+
+    #normed_train_data = norm(train_dataset)
+    #normed_test_data = norm(test_dataset)
     print('Good')
 
     def build_model():
         model = keras.Sequential([
-            layers.Dense(1012, activation='relu', input_shape=[len(train_dataset.keys())]),
-            layers.Dense(512, activation='relu'),
-            layers.Dense(1)])
+          layers.Dense(5600, activation='relu', input_shape=[len(train_dataset.keys())]),
+          layers.Dense(2000, activation='relu'),
+          layers.Dense(1)
+        ])
 
         optimizer = tf.keras.optimizers.RMSprop(0.001)
 
@@ -451,7 +476,7 @@ if 1 == 1:
                 print('')
             print('.', end='')
 
-    EPOCHS = 70
+    EPOCHS = 50
 
     history = model.fit(
         train_dataset, train_labels,
@@ -468,7 +493,7 @@ if 1 == 1:
         
         plt.figure()
         plt.xlabel('Epoch')
-        plt.ylabel('Mean Abs Error [yards_gained]')
+        plt.ylabel('Mean Abs Error [fumble_recovery_1_yards]')
         plt.plot(hist['epoch'], hist['mean_absolute_error'],
                  label='Train Error')
         plt.plot(hist['epoch'], hist['val_mean_absolute_error'],
@@ -478,7 +503,7 @@ if 1 == 1:
         
         plt.figure()
         plt.xlabel('Epoch')
-        plt.ylabel('Mean Square Error [$yards_gained^2$]')
+        plt.ylabel('Mean Square Error [$fumble_recovery_1_yards^2$]')
         plt.plot(hist['epoch'], hist['mean_squared_error'],
                  label='Train Error')
         plt.plot(hist['epoch'], hist['val_mean_squared_error'],
@@ -497,8 +522,8 @@ if 1 == 1:
     test_predictions = model.predict(test_dataset).flatten()
      
     plt.scatter(test_labels, test_predictions) 
-    plt.xlabel('True Values [yards_gained]')
-    plt.ylabel('Predictions [yards_gained]')
+    plt.xlabel('True Values [fumble_recovery_1_yards]')
+    plt.ylabel('Predictions [fumble_recovery_1_yards]')
     plt.axis('equal')
     plt.axis('square')
     plt.xlim([-100,plt.xlim()[1]])
@@ -508,7 +533,7 @@ if 1 == 1:
 
     error = test_predictions - test_labels
     plt.hist(error, bins = 25)
-    plt.xlabel("Prediction Error [yards_gained]")
+    plt.xlabel("Prediction Error [fumble_recovery_1_yards]")
     _ = plt.ylabel("Count")
     
     

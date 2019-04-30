@@ -61,18 +61,18 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'qb_spike':
            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'air_yards':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'air_yards':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'yards_after_catch':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'pass_location':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'pass_location':
+        #    train_stats = train_stats.drop(c, axis=1)
         #elif c == 'run_location':
         #    train_stats = train_stats.drop(c, axis=1)
-        elif c == 'kick_distance':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'timeout':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'kick_distance':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'timeout':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'first_down_rush':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'first_down_pass':
@@ -85,20 +85,20 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'fourth_down_failed':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'incomplete_pass':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'interception':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'safety':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'fumble_lost':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'incomplete_pass':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'interception':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'safety':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'fumble_lost':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'own_kickoff_recovery_td':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'qb_hit':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'sack':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'qb_hit':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'sack':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'touchdown':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'pass_touchdown':
@@ -109,18 +109,18 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'two_point_attempt':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'fumble':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'complete_pass':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'fumble_recovery_1_yards':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'return_yards':
-           train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'fumble':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'complete_pass':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'fumble_recovery_1_yards':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'return_yards':
+        #   train_stats = train_stats.drop(c, axis=1)
         elif c == 'duration':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'run_gap':
-            train_stats = train_stats.drop(c, axis=1)   
+        #elif c == 'run_gap':
+        #    train_stats = train_stats.drop(c, axis=1)   
         elif c == 'field_goal_result':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'two_point_conv_result':
@@ -147,12 +147,17 @@ print(df.head())
 
 df.loc[df.WTemp == '39/53', 'WTemp'] = '46'
 
-#Change String stats to dummy columns
-df = clean(df)
-#Throw Out stats that are 'illegal'
-df = throwOut(df)
+df['passLocation'] = 0
+df.loc[df.pass_location == 'left', 'passLocation'] = 1
+df.loc[df.pass_location == 'middle', 'passLocation'] = 2
+df.loc[df.pass_location == 'right', 'passLocation'] = 3
+df = df.drop(columns=['pass_location'])
 
-#df = df.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
+df['gap'] = 0
+df.loc[df.run_gap == 'end', 'gap'] = 1
+df.loc[df.run_gap == 'tackle', 'gap'] = 2
+df.loc[df.run_gap == 'gaurd', 'gap'] = 3
+df = df.drop(columns=['run_gap'])
 
 df['location'] = 0
 df.loc[df.run_location == 'left', 'location'] = 1
@@ -160,8 +165,15 @@ df.loc[df.run_location == 'middle', 'location'] = 2
 df.loc[df.run_location == 'right', 'location'] = 3
 df = df.drop(columns=['run_location'])
 
-X = df.drop('location', axis=1)
-y = df['location']
+#Change String stats to dummy columns
+df = clean(df)
+#Throw Out stats that are 'illegal'
+df = throwOut(df)
+
+#df = df.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
+
+X = df.drop('safety', axis=1)
+y = df['safety']
 
 from sklearn.model_selection import train_test_split
 

@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 
 import pathlib
 
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -12,6 +13,17 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import gc
 
+def team2num(training_df, cat, *teams):
+    training_df[cat] = training_df[cat].map({'0':0,'PHI': 1, 'WAS':2,
+                        'DAL':3,'NYG':4,'CHI':5,'DET':6,'GB':7,
+                        'MIN':8,'ATL':9,'CAR':10,'NO':11,'TB':12,
+                        'ARI':13,'LA':14,'SF':15,'SEA':16,'BUF':17,
+                        'MIA':18,'NE':19,'NYJ':20,'BAL':21,'CIN':22,
+                        'CLE':23,'PIT':24,'HOU':25,'IND':26,'JAX':27,
+                        'TEN':28,'DEN':29,'KC':30,'LAC':31,'OAK':32})
+    #training_df[cat] = training_df[cat].astype(int)
+    return training_df
+
 def clean(training_df):
     training_df = training_df.replace({'STL':'LA'}, regex=True)
     training_df = training_df.replace({'SD':'LAC'}, regex=True)
@@ -19,13 +31,13 @@ def clean(training_df):
     training_df['posteam'] = 'P' + training_df['posteam'].astype(str)
     training_df['defteam'] = 'D' + training_df['defteam'].astype(str)
     training_df['pass_location'] = 'Pass' + training_df['pass_location'].astype(str)
-    #training_df['run_location'] = 'Run' + training_df['run_location'].astype(str)
+    training_df['run_location'] = 'Run' + training_df['run_location'].astype(str)
     training_df['extra_point_result'] = 'Extra' + training_df['extra_point_result'].astype(str)
     training_df['two_point_conv_result'] = 'Two' + training_df['two_point_conv_result'].astype(str)
-    #training_df['run_gap'] = 'Gap' + training_df['run_gap'].astype(str)
+    training_df['run_gap'] = 'Gap' + training_df['run_gap'].astype(str)
     training_df['field_goal_result'] = 'Field' + training_df['field_goal_result'].astype(str)
-    training_df['timeout_team'] = 'TO' + training_df['timeout_team'].astype(str)
-    #training_df['td_team'] = 'TD' + training_df['td_team'].astype(str)
+    #training_df['timeout_team'] = 'TO' + training_df['timeout_team'].astype(str)
+    training_df['td_team'] = 'TD' + training_df['td_team'].astype(str)
     training_df['passer_player_id'] = 'Pass2' + training_df['passer_player_id'].astype(str)
     training_df['receiver_player_id'] = 'Rec' + training_df['receiver_player_id'].astype(str)
     training_df['rusher_player_id'] = 'Rush' + training_df['rusher_player_id'].astype(str)
@@ -40,7 +52,7 @@ def clean(training_df):
     training_df['AOffense'] = 'AOff' + training_df['AOffense'].astype(str)
     training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='home', 'posteam_type']=1
     training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='away', 'posteam_type']=0
-    #training_df['fumbled_1_player_id'] = 'fum' + training_df['fumbled_1_player_id'].astype(str)
+    training_df['fumbled_1_player_id'] = 'fum' + training_df['fumbled_1_player_id'].astype(str)
 
     #training_df[''] = '' + training_df[''].astype(str)
     #training_df[''] = '' + training_df[''].astype(str)
@@ -78,10 +90,10 @@ def clean(training_df):
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['passer_player_id'])], axis=1)
     training_df = training_df.drop(columns=['passer_player_id'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['td_team'])], axis=1)
-    #training_df = training_df.drop(columns=['td_team'])
+    training_df = training_df.drop(columns=['td_team'])
     timeOuts = list(pd.get_dummies(training_df['timeout_team']).columns.values)#############################################3
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['timeout_team'])], axis=1)
-    training_df = training_df.drop(columns=['timeout_team'])
+    #training_df = training_df.drop(columns=['timeout_team'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['two_point_conv_result'])], axis=1)
     training_df = training_df.drop(columns=['two_point_conv_result'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['extra_point_result'])], axis=1)
@@ -89,9 +101,9 @@ def clean(training_df):
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['field_goal_result'])], axis=1)
     training_df = training_df.drop(columns=['field_goal_result'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['run_gap'])], axis=1)
-    #training_df = training_df.drop(columns=['run_gap'])
+    training_df = training_df.drop(columns=['run_gap'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['run_location'])], axis=1)
-    #training_df = training_df.drop(columns=['run_location'])
+    training_df = training_df.drop(columns=['run_location'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['pass_location'])], axis=1)
     training_df = training_df.drop(columns=['pass_location'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['defteam'])], axis=1)
@@ -102,7 +114,7 @@ def clean(training_df):
     training_df = training_df.drop(columns=['posteam_type'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['fumbled_1_player_id'])], axis=1)
     training_df = training_df.drop(columns=['fumbled_1_player_id'])
-    #training_df = training_df.drop(columns=['goal_to_go'])
+    training_df = training_df.drop(columns=['goal_to_go'])
     return training_df
 
 def simSave(gameLog):
@@ -181,8 +193,8 @@ def throws(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('Two'):
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'timeout':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'timeout':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('TO'):
             train_stats = train_stats.drop(c, axis=1)
         elif c.startswith('TD'):
@@ -359,6 +371,9 @@ tf.enable_eager_execution()
 
 #with tf.device("/device:GPU:0"):
 if 1 == 1:
+    weights = tf.Variable(tf.random_normal([784, 200], stddev=0.35),
+                      name="weights")
+    biases = tf.Variable(tf.zeros([200]), name="biases")
     #Test below, never tried
     #config = tf.ConfigProto()
     #config.gpu_options.allow_growth = True
@@ -368,26 +383,54 @@ if 1 == 1:
     tf.enable_eager_execution()
 
     print(tf.__version__)
+    teams = ['0', 'PHI', 'NYG', 'DAL', 'WAS', 'ARI', 'SEA', 'SF', 'LA',
+                'ATL', 'CAR', 'NO', 'TB', 'CHI', 'DET', 'GB', 'MIN',
+                'BUF', 'MIA', 'NE', 'NYJ', 'BAL', 'CIN', 'CLE', 'PIT',
+                'HOU', 'IND', 'JAX', 'TEN', 'DEN', 'KC', 'LAC', 'OAK']
+    
     #test.csv!!!!!!!!!!!!!!!!!!!!!!!!!!!@#@!#@!#@!#@!#!!@predict
-    training_df: pd.DataFrame = pd.read_csv("rushYards.csv", low_memory=False)
-    training_df.loc[training_df.WTemp == '39/53', 'WTemp'] = 46
+    training_df: pd.DataFrame = pd.read_csv("predict.csv", low_memory=False, index_col=0)
     #training_df = training_df.loc[training_df['posteam'] != 0]
-    #training_df = training_df.drop(columns=['game_id', 'THRpasser_player_id', 'RECreceiver_player_id', 'RSHrusher_player_id', 'KICKkicker_player_id'])
-    training_df['location'] = 0
-    training_df.loc[training_df.run_location == 'left', 'location'] = 1
-    training_df.loc[training_df.run_location == 'middle', 'location'] = 2
-    training_df.loc[training_df.run_location == 'right', 'location'] = 3
-    training_df = training_df.drop(columns=['run_location'])
-    
-    training_df['gap'] = 0
-    training_df.loc[training_df.run_gap == 'end', 'gap'] = 1
-    training_df.loc[training_df.run_gap == 'tackle', 'gap'] = 2
-    training_df.loc[training_df.run_gap == 'gaurd', 'gap'] = 3
-    training_df = training_df.drop(columns=['run_gap'])
-    
+    training_df = training_df.drop(columns=['game_id', 'THRpasser_player_id', 'RECreceiver_player_id', 'RSHrusher_player_id', 'KICKkicker_player_id'])
+    training_df['timeout_pos'] = 0
+    training_df.loc[training_df.timeout_team == training_df.posteam, 'timeout_pos'] = 1
+    training_df.loc[(training_df.timeout_team == training_df.defteam), 'timeout_pos'] = 2
     training_df = clean(training_df)
+    #####training_df = team2num(training_df, 'timeout_team', teams)
+    #training_df = training_df.loc[training_df.timeout_team != 0]
+    training_df = training_df.drop(columns=['timeout_team'])
     training_df = throwOut(training_df)
-    training_df = training_df.loc[training_df.rush_attempt == 1]
+    #training_df.to_csv('wrong.csv')
+
+    
+    
+
+    ################################################################################################
+    # Create some variables.
+    #v1 = tf.get_variable("v1", shape=[3], initializer = tf.zeros_initializer)
+    #v2 = tf.get_variable("v2", shape=[5], initializer = tf.zeros_initializer)
+
+    #inc_v1 = v1.assign(v1+1)
+    #dec_v2 = v2.assign(v2-1)
+
+    # Add an op to initialize the variables.
+    #init_op = tf.global_variables_initializer()
+
+    ## Add ops to save and restore all the variables.
+    #saver = tf.train.Saver()
+
+    # Later, launch the model, initialize the variables, do some work, and save the
+    # variables to disk.
+    #with tf.Session() as sess:
+    #    sess.run(init_op)
+    #    # Do some work with the model.
+    #    inc_v1.op.run()
+    #    dec_v2.op.run()
+    #    # Save the variables to disk.
+    #    save_path = saver.save(sess, "/tmp/model.ckpt")
+    #    print("Model saved in path: %s" % save_path)
+    #    ###########################################################################################
+
 
     training_df = training_df.astype(float)
     dataset = training_df.copy()
@@ -403,7 +446,8 @@ if 1 == 1:
     del dataset
     gc.collect()
     print("good")
-
+    #sns.pairplot(train_dataset[["game_seconds_remaining", "drive", "ydstogo", "yards_gained"]], diag_kind="kde")
+    #plt.show()
     print("gooder")
     train_stats = train_dataset.describe()
     print("goodest")
@@ -411,30 +455,35 @@ if 1 == 1:
     
     
     #train_stats = throwOut(train_stats)   
-    train_stats = train_stats.pop('yards_gained')
+    train_stats = train_stats.pop('timeout_pos')
     
     
     train_stats = train_stats.transpose()
     print(train_stats)
 
-    train_labels = train_dataset
-    test_labels = train_dataset
-    train_labels = train_dataset.pop('yards_gained')
-    test_labels = test_dataset.pop('yards_gained')
+    train_labels = train_dataset.pop('timeout_pos')
+    test_labels = test_dataset.pop('timeout_pos')
 
+    def norm(x):
+        return (x - train_stats['mean']/train_stats['std'])
+    
+    train_dataset = norm(train_dataset)
+    test_dataset = norm(test_dataset)
+
+    #normed_train_data = norm(train_dataset)
+    #normed_test_data = norm(test_dataset)
     print('Good')
-
     def build_model():
         model = keras.Sequential([
-            layers.Dense(1012, activation='relu', input_shape=[len(train_dataset.keys())]),
-            layers.Dense(512, activation='relu'),
-            layers.Dense(1)])
+            layers.Dense(2048, activation=tf.nn.relu, input_shape=[len(train_dataset.keys())]),
+            layers.Dense(1024, activation=tf.nn.relu),
+            layers.Dense(3, activation=tf.nn.softmax)])
 
         optimizer = tf.keras.optimizers.RMSprop(0.001)
 
-        model.compile(loss='mse',
+        model.compile(loss='sparse_categorical_crossentropy',
                       optimizer=optimizer,
-                      metrics=['mae', 'mse'])
+                      metrics=['accuracy'])
         return model
         
     model = build_model()
@@ -447,15 +496,15 @@ if 1 == 1:
     # Display training progress by printing a single dot for each completed epoch
     class PrintDot(keras.callbacks.Callback):
         def on_epoch_end(self, epoch, logs):
-            if epoch % 10 == 0: 
+            if epoch % 100 == 0: 
                 print('')
             print('.', end='')
 
-    EPOCHS = 70
+    EPOCHS = 10
 
     history = model.fit(
         train_dataset, train_labels,
-        epochs=EPOCHS, validation_split = 0.2, verbose=0,
+        epochs=EPOCHS,
         callbacks=[PrintDot()])
         
     hist = pd.DataFrame(history.history)
@@ -468,7 +517,7 @@ if 1 == 1:
         
         plt.figure()
         plt.xlabel('Epoch')
-        plt.ylabel('Mean Abs Error [yards_gained]')
+        plt.ylabel('Mean Abs Error [timeout_team]')
         plt.plot(hist['epoch'], hist['mean_absolute_error'],
                  label='Train Error')
         plt.plot(hist['epoch'], hist['val_mean_absolute_error'],
@@ -478,7 +527,7 @@ if 1 == 1:
         
         plt.figure()
         plt.xlabel('Epoch')
-        plt.ylabel('Mean Square Error [$yards_gained^2$]')
+        plt.ylabel('Mean Square Error [$timeout_team^2$]')
         plt.plot(hist['epoch'], hist['mean_squared_error'],
                  label='Train Error')
         plt.plot(hist['epoch'], hist['val_mean_squared_error'],
@@ -488,233 +537,42 @@ if 1 == 1:
         plt.show()
 
 
-    plot_history(history)
+    #plot_history(history)
 
-    loss, mae, mse = model.evaluate(test_dataset, test_labels, verbose=0)
+    test_loss, test_acc = model.evaluate(test_dataset, test_labels)
 
-    print("Testing set Mean Abs Error: {:5.2f} MPG".format(mae))
+    print('Test accuracy:', test_acc)
 
-    test_predictions = model.predict(test_dataset).flatten()
-     
-    plt.scatter(test_labels, test_predictions) 
-    plt.xlabel('True Values [yards_gained]')
-    plt.ylabel('Predictions [yards_gained]')
+    test_predictions = model.predict(test_dataset)
+    print(test_predictions[20])
+    
+    s = pd.Series()
+    for i in range(len(test_predictions)):
+        s = s.set_value(i, np.argmax(test_predictions[i]))
+    print(s)
+    print("S")
+        
+    count = 0
+    total = 0
+    for i in range(len(test_predictions)):
+        total+=1
+        if s.index[i] != test_dataset.index[i]:
+            count += 1
+            #print(s.index[i])
+            #print(test_dataset.index[i])
+            
+    print(count)
+    print(total)
+    
+    plt.scatter(test_labels, s) 
+    plt.xlabel('True Values [Timeout Team]')
+    plt.ylabel('Predictions [Timout Team]')
     plt.axis('equal')
     plt.axis('square')
-    plt.xlim([-100,plt.xlim()[1]])
-    plt.ylim([-100,plt.ylim()[1]])
-    _ = plt.plot([-100, 100], [-100, 100])
+    plt.xlim([0,plt.xlim()[1]])
+    plt.ylim([0,plt.ylim()[1]])
+    _ = plt.plot([0, 200], [0, 200])
     plt.show()
-
-    error = test_predictions - test_labels
-    plt.hist(error, bins = 25)
-    plt.xlabel("Prediction Error [yards_gained]")
-    _ = plt.ylabel("Count")
     
     
-    ##############################################
-    #   Simulation
-    ##############################################
-    del train_dataset
-    del train_stats
-    del train_labels
-    del test_labels
-    data = pd.read_csv("predict.csv", low_memory=False, index_col=0)
-
-    games = data.copy()
-    games = clean(games)
-    games = games.drop(columns=['0'])
-    games = throwOut(games)
-    #games = clean(games)
-    #games = throws(games)
     
-    #Every Game in 2018
-    for index, row in games.iterrows():
-        year = data['Year'][index]
-        game_id = data['game_id'][index]
-        posteam = 'PHI'#data['posteam'][index]
-        defteam = 'NYG'#data['defteam'][index]
-        #row = throws(row)
-        #print(row['c1'], row['c2'])
-        time = 3600
-        row['yardline_100'] = 75
-        row = row.drop(labels=['game_id'])
-        prediction = model.predict(row).flatten()
-            
-        for i in range(len(prediction)):
-            print(i)
-            print("i^")
-            print(prediction[i])
-            
-        gameLog = temp#Fresh game
-        gameLog = simSave(gameLog)#Add Predictions
-            
-        save = gameLog#Save this play
-            
-        if gameLog['posteam_type'] == 0:
-            home = defteam
-            away = posteam
-        else:
-            home = posteam
-            away = defteam
-        homeHit = 0
-        awayHit = 0
-        homeRush = 0
-        awayRush = 0
-        homePass = 0
-        awayPass = 0
-        homeIncomplete = 0
-        awayIncomplete = 0
-        homeInt = 0
-        awayInt = 0
-            
-        while(time > 0):
-            gameLog['quarter_seconds_remaining'] = gameLog['quarter_seconds_remaining'] + gameLog['duration']
-            gameLog['half_seconds_remaining'] = gameLog['half_seconds_remaining'] + gameLog['duration']
-            gameLog['game_seconds_remaining'] = gameLog['game_seconds_remaining'] + gameLog['duration']
-            time = time + game['duration']
-            if gameLog['quarter_seconds_remaining'] <= 0:
-                if gameLog['qtr'] == 1:
-                   gameLog['half_seconds_remaining'] = 900
-                   gameLog['game_seconds_remaining'] = 2700
-                   gameLog['qtr'] = 2
-                   gameLog['quarter_seconds_remaining'] = 900
-                   time = 2700
-                elif gameLog['qtr'] == 2:
-                    gameLog['half_seconds_remaining'] = 1800
-                    gameLog['game_seconds_remaining'] = 1800
-                    gameLog['qtr'] = 3
-                    gameLog['quarter_seconds_remaining'] = 900
-                    time = 1800
-                elif gameLog['qtr'] == 3:
-                    gameLog['half_seconds_remaining'] = 900
-                    gameLog['game_seconds_remaining'] = 900
-                    gameLog['qtr'] = 4
-                    gameLog['quarter_seconds_remaining'] = 900
-                    time = 900
-                elif gameLog['qtr'] == 4:
-                    if gameLog['score_differential'] == 0:
-                        gameLog['half_seconds_remaining'] = 900
-                        gameLog['game_seconds_remaining'] = 900
-                        gameLog['qtr'] = 5
-                        gameLog['quarter_seconds_remaining'] = 900
-                        time = 900
-                    else:  
-                        gameLog['half_seconds_remaining'] = 0
-                        gameLog['game_seconds_remaining'] = 0
-                        gameLog['quarter_seconds_remaining'] = 0
-                elif gameLog['qtr'] == 5:
-                    gameLog['half_seconds_remaining'] = 0
-                    gameLog['game_seconds_remaining'] = 0
-                    gameLog['quarter_seconds_remaining'] = 0
-                    
-                        
-                        
-            gameLog['yardline_100'] -= gameLog['yards_gained']
-            if gameLog['posteam_type'] == 1:
-                gameLog['totHit'] = homeHit = homeHit + gameLog['qb_hit']
-                gameLog['totfirst_down_rush'] = homeRush = homeRush + gameLog['totfirst_down_rush']
-                gameLog['totfirst_down_pass'] = homePass = homePass + gameLog['totfirst_down_pass']
-                gameLog['totincomplete_pass'] = homeIncomplete = homeIncomplete + gameLog['totincomplete_pass']
-                gameLog['totinterception'] = homeInt = homeInt + gameLog['interception']  
-            else:
-                gameLog['totHit'] = awayHit = awayHit + gameLog['qb_hit']
-                gameLog['totfirst_down_rush'] = awayRush = awayRush + gameLog['totfirst_down_rush']
-                gameLog['totfirst_down_pass'] = awayPass = awayPass + gameLog['totfirst_down_pass']
-                gameLog['totincomplete_pass'] = awayIncomplete = awayIncomplete + gameLog['totincomplete_pass']
-                gameLog['totinterception'] = awayInt = awayInt + gameLog['interception']
-                for team in timeOuts:
-                    if gameLog[team] == 1:
-                        if team == 'TO'+posteam:
-                            if gameLog['posteam_type'] == 1:
-                                gameLog['home_timeouts_remaining'] -= 1
-                            else:
-                                gameLog['away_timeouts_remaining'] -= 1
-            gameLog['ydstogo'] -= gameLog['yards_gained']
-            if gameLog['ydstogo'] <= 0:
-                gameLog['down'] = 1
-                if gameLog['yardline_100'] <= 10:
-                    gameLog['ydstogo'] = gameLog['yardline_100']
-                else:
-                    gameLog['ydstogo'] = 10
-            else:
-                gameLog['down'] +=1
-            if gameLog['pass_touchdown']==1 or gameLog['rush_touchdown']==1:
-                gameLog['posteam_score'] += 6
-                if gameLog['posteam_type']==1:
-                    gameLog['total_home_score'] += 6
-                else:
-                    gameLog['total_away_score'] += 6
-                    
-                gameLog['score_differential']=gameLog['posteam_score']-gameLog['defteam_score']
-                
-            if gameLog['extra_point_result'] == 1:
-                gameLog['posteam_score'] += 1
-                if gameLog['posteam_type']==1:
-                    gameLog['total_home_score'] += 1
-                else:
-                    gameLog['total_away_score'] += 1
-                gameLog['score_differential']=gameLog['posteam_score']-gameLog['defteam_score']
-                gameLog['yard_line_100'] = 75
-            if gameLog['two_point_conv_result'] == 1:
-                gameLog['posteam_score'] += 2
-                if gameLog['posteam_type']==1:
-                    gameLog['total_home_score'] += 2
-                else:
-                    gameLog['total_away_score'] += 2
-                gameLog['score_differential']=gameLog['posteam_score']-gameLog['defteam_score']
-                gameLog['yard_line_100'] = 75
-                
-            if gameLog['interception'] == 1 or gameLog['punt_attempt']==1 or gameLog['fumble_lost']==1 or gameLog['down']==5:
-                gameLog['drive']+=1
-                saveTeam = posteam
-                gameLog['P' + defteam.astype(str)] = 1#Remove Previous posteam, and add new one
-                gameLog['P' + posteam.astype(str)] = 0
-                gameLog['D' + posteam.astype(str)] = 1
-                gameLog['D' + defteam.astype(str)] = 0
-                posteam = defteam
-                defteam = saveTeam
-                gameLog['posteam_type']= (gameLog['posteam_type']+1)%2
-                    
-                 
-            prediction = model.predict(gameLog).flatten()
-            gameLog = simSave(gameLog)
-            
-            transfer = gameLog['pass_attempt', 'complete_pass', 'fumble', 'fumble_lost',
-                                    'qb_hit', 'interception', 'extra_point_attempt', 
-                                    'extra_point_result', 'rush_attempt', 'complete_pass',
-                                    'pass_touchdown', 'yards_gained', 'rush_touchdown',
-                                    'sack', 'pass_attempt', 'field_goal_attempt', 'field_goal_result',
-                                    'kick_distance']
-            transfer['Year'] = year
-            transfer['game_id'] = game_id
-                
-            transfer['posteam'] = posteam
-            transfer['defteam'] = defteam
-            for i in range(len(throw)):
-                if gameLog['Pass2' + i.astype(str)] == 1:
-                    transfer['passer_player_id'] = i
-                    break
-            for i in range(len(rusher)):
-                if gameLog['Rush' + i.astype(str)] == 1:
-                    transfer['rusher_player_id'] = i
-                    break
-            for i in range(len(receiver)):
-                if gameLog['Rec' + i.astype(str)] == 1:
-                    transfer['receiver_player_id'] = i
-                    break
-            for i in range(len(kicker)):
-                if gameLog['Kick' + i.astype(str)] == 1:
-                    transfer['kicker_player_id'] = i
-                    break
-            try:
-                saveGame = pd.concat([saveGame, transfer], axis=0, ignore_index=True)
-            except NameError:#saveGame doesn't exist
-                saveGame = transfer
-                
-                
-            #list(prediction)[0
-                
-                
-    saveGame.to_csv('gameSave.csv')
-     

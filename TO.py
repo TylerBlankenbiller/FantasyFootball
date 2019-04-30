@@ -1,4 +1,4 @@
-import pandas as pd
+port pandas as pd
 
 
 def clean(training_df):
@@ -135,12 +135,15 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'fumbled_1_player_id':
             train_stats = train_stats.drop(c, axis=1)
+        elif c == 'extra_point_result':
+            train_stats = train_stats.drop(c, axis=1)
         #elif c == 'timeout_team':
+
         #    train_stats = train_stats.drop(c, axis=1)
     return train_stats
 
 
-df = pd.read_csv('testLast.csv')
+df = pd.read_csv('timeout.csv')
 print(df.head())
 
 df.loc[df.WTemp == '39/53', 'WTemp'] = '46'
@@ -168,7 +171,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
 from sklearn.ensemble import RandomForestClassifier
 
-random_forest = RandomForestClassifier(n_estimators=8, max_depth=8, random_state=1)
+random_forest = RandomForestClassifier(n_estimators=200, max_depth=200, random_state=1)
 
 random_forest.fit(X_train, y_train)
 

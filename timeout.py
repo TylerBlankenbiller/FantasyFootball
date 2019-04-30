@@ -1,9 +1,10 @@
 import pandas as pd
 
 
-df = pd.read_csv('testLast2013-2017.csv', low_memory=False)
+df = pd.read_csv('testLast.csv', low_memory=False)
 
 df = df.loc[df['posteam'] != '0']
+df = df.loc[(df['Year'] == 2018) & (df['SType'] == 'Regular')]
 
 print(len(df))
 

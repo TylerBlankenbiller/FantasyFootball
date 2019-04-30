@@ -22,6 +22,11 @@ def clean(training_df):
     training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='home', 'posteam_type']=1
     training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='away', 'posteam_type']=0
     
+    training_df['pass_location'] = 'Pass' + training_df['pass_location'].astype(str)
+    training_df['run_location'] = 'Run' + training_df['run_location'].astype(str)
+    training_df['run_gap'] = 'Gap' + training_df['run_gap'].astype(str)
+    training_df['timeout_team'] = 'TO' + training_df['timeout_team'].astype(str)
+    
     training_df = pd.concat([training_df, pd.get_dummies(training_df['SType'])], axis=1)
     training_df = training_df.drop(columns=['SType'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['AOffense'])], axis=1)
@@ -40,6 +45,15 @@ def clean(training_df):
     training_df = training_df.drop(columns=['WDirection'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['Weather'])], axis=1)
     training_df = training_df.drop(columns=['Weather'])
+    
+    training_df = training_df.drop(columns=['run_gap'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['run_location'])], axis=1)
+    training_df = training_df.drop(columns=['run_location'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['pass_location'])], axis=1)
+    training_df = training_df.drop(columns=['pass_location'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['defteam'])], axis=1)
+    timeOuts = list(pd.get_dummies(training_df['timeout_team']).columns.values)#############################################3
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['timeout_team'])], axis=1)
 
     training_df = pd.concat([training_df, pd.get_dummies(training_df['defteam'])], axis=1)
     training_df = training_df.drop(columns=['defteam'])
@@ -69,10 +83,10 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         #elif c == 'run_location':
         #    train_stats = train_stats.drop(c, axis=1)
-        elif c == 'kick_distance':
-            train_stats = train_stats.drop(c, axis=1)
-        elif c == 'timeout':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'kick_distance':
+        #    train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'timeout':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'first_down_rush':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'first_down_pass':
@@ -95,8 +109,8 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'own_kickoff_recovery_td':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'qb_hit':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'qb_hit':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'sack':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'touchdown':
@@ -119,8 +133,8 @@ def throwOut(train_stats):
            train_stats = train_stats.drop(c, axis=1)
         elif c == 'duration':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'run_gap':
-            train_stats = train_stats.drop(c, axis=1)   
+        #elif c == 'run_gap':
+        #    train_stats = train_stats.drop(c, axis=1)   
         elif c == 'field_goal_result':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'two_point_conv_result':
@@ -142,7 +156,7 @@ def throwOut(train_stats):
     return train_stats
 
 
-df = pd.read_csv('runLocation.csv')
+df = pd.read_csv('qbHit.csv')
 print(df.head())
 
 df.loc[df.WTemp == '39/53', 'WTemp'] = '46'
@@ -154,14 +168,8 @@ df = throwOut(df)
 
 #df = df.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
 
-df['location'] = 0
-df.loc[df.run_location == 'left', 'location'] = 1
-df.loc[df.run_location == 'middle', 'location'] = 2
-df.loc[df.run_location == 'right', 'location'] = 3
-df = df.drop(columns=['run_location'])
-
-X = df.drop('location', axis=1)
-y = df['location']
+X = df.drop('qb_hit', axis=1)
+y = df['qb_hit']
 
 from sklearn.model_selection import train_test_split
 

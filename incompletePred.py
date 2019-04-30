@@ -65,10 +65,10 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'yards_after_catch':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'pass_location':
-            train_stats = train_stats.drop(c, axis=1)
-        #elif c == 'run_location':
+        #elif c == 'pass_location':
         #    train_stats = train_stats.drop(c, axis=1)
+        elif c == 'run_location':
+            train_stats = train_stats.drop(c, axis=1)
         elif c == 'kick_distance':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'timeout':
@@ -85,8 +85,8 @@ def throwOut(train_stats):
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'fourth_down_failed':
             train_stats = train_stats.drop(c, axis=1)
-        elif c == 'incomplete_pass':
-            train_stats = train_stats.drop(c, axis=1)
+        #elif c == 'incomplete_pass':
+        #    train_stats = train_stats.drop(c, axis=1)
         elif c == 'interception':
             train_stats = train_stats.drop(c, axis=1)
         elif c == 'safety':
@@ -147,21 +147,21 @@ print(df.head())
 
 df.loc[df.WTemp == '39/53', 'WTemp'] = '46'
 
+df['passLocation'] = 0
+df.loc[df.pass_location == 'left', 'passLocation'] = 1
+df.loc[df.pass_location == 'middle', 'passLocation'] = 2
+df.loc[df.pass_location == 'right', 'passLocation'] = 3
+df = df.drop(columns=['pass_location'])
+
 #Change String stats to dummy columns
 df = clean(df)
 #Throw Out stats that are 'illegal'
 df = throwOut(df)
 
-#df = df.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
+df = df.drop(columns=['punt_attempt', 'field_goal_attempt', 'pass_attempt', 'rush_attempt'])
 
-df['location'] = 0
-df.loc[df.run_location == 'left', 'location'] = 1
-df.loc[df.run_location == 'middle', 'location'] = 2
-df.loc[df.run_location == 'right', 'location'] = 3
-df = df.drop(columns=['run_location'])
-
-X = df.drop('location', axis=1)
-y = df['location']
+X = df.drop('incomplete_pass', axis=1)
+y = df['incomplete_pass']
 
 from sklearn.model_selection import train_test_split
 
