@@ -1,6 +1,22 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+import pathlib
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+
+print(tf.__version__)
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 game = pd.read_csv("testLast2.csv", low_memory = False)
 
@@ -169,14 +185,14 @@ def clean(training_df):
     training_df['ACoach'] = 'ACo' + training_df['ACoach'].astype(str)
     training_df['ADefense'] = 'ADef' + training_df['ADefense'].astype(str)
     training_df['AOffense'] = 'AOff' + training_df['AOffense'].astype(str)
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
     
-    training_df['SType'] = training_df.loc[training_df.SType=='Regular', 'SType']='1'
-    training_df['SType'] = training_df.loc[training_df.SType=='Pre', 'SType']='0'
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
-    training_df['WTemp'] = training_df.loc[training_df.WTemp=='39/53', 'WTemp']='46'
+    training_df.loc[training_df.SType=='Regular', 'SType']='1'
+    training_df.loc[training_df.SType=='Pre', 'SType']='0'
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    training_df.loc[training_df.WTemp=='39/53', 'WTemp']='46'
     training_df = pd.concat([training_df, pd.get_dummies(training_df['AOffense'])], axis=1)
     training_df = training_df.drop(columns=['AOffense'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['ADefense'])], axis=1)
@@ -274,7 +290,7 @@ y = timeout['timeout']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
-random_forest = RandomForestClassifier(n_estimators=50, max_depth=50, random_state=1)
+random_forest = RandomForestClassifier(n_estimators=100, max_depth=1000, random_state=1)
 
 random_forest.fit(X_train, y_train)
 
@@ -296,12 +312,16 @@ gameDF['timeout'] = y_predict
 #   TO TEAM
 ##########################################################################################################################################
 timeout_team = game.loc[(game.timeout == 1)]
-timeout = timeout_team.loc[(timeout_team.timeout_team == '-1')]
+print(timeout_team)
+print('TIMEOUT TEAM^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+timeout = timeout_team.loc[(timeout_team.timeout_team == '1')]
 print(timeout)
-ntimeout = timeout_team.loc[(timeout_team.timeout_team == '1')]
+print('TIMEOUT^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+ntimeout = timeout_team.loc[(timeout_team.timeout_team == '-1')]
 ntimeout = ntimeout.sample(n=len(timeout), random_state=1)
 timeout_team = pd.concat([timeout, ntimeout])
 print(timeout_team)
+print('TIMEOUT TEAM^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 def toteam(training_df):
     '''
         Change stats that are strings into dummy columns
@@ -320,14 +340,14 @@ def toteam(training_df):
     training_df['ACoach'] = 'ACo' + training_df['ACoach'].astype(str)
     training_df['ADefense'] = 'ADef' + training_df['ADefense'].astype(str)
     training_df['AOffense'] = 'AOff' + training_df['AOffense'].astype(str)
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
     
-    training_df['SType'] = training_df.loc[training_df.SType=='Regular', 'SType']='1'
-    training_df['SType'] = training_df.loc[training_df.SType=='Pre', 'SType']='0'
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
-    training_df['posteam_type'] = training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
-    training_df['WTemp'] = training_df.loc[training_df.WTemp=='39/53', 'WTemp']='46'
+    training_df.loc[training_df.SType=='Regular', 'SType']='1'
+    training_df.loc[training_df.SType=='Pre', 'SType']='0'
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    training_df.loc[training_df.WTemp=='39/53', 'WTemp']='46'
     training_df = pd.concat([training_df, pd.get_dummies(training_df['AOffense'])], axis=1)
     training_df = training_df.drop(columns=['AOffense'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['ADefense'])], axis=1)
@@ -386,7 +406,7 @@ y = timeout_team['timeout_team']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
-random_forest = RandomForestClassifier(n_estimators=100, max_depth=100, random_state=1)
+random_forest = RandomForestClassifier(n_estimators=100, max_depth=1000, random_state=1)
 
 random_forest.fit(X_train, y_train)
 
@@ -405,3 +425,137 @@ print(len(timeout_team.loc[(timeout_team.timeout_team == '1')]))
 print(len(timeout_team.loc[(timeout_team.timeout_team == '-1')]))
 
 gameDF['timeout_team'] = y_predict
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Display training progress by printing a single dot for each completed epoch
+class PrintDot(keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs):
+        if epoch % 100 == 0: print('')
+        print('.', end='')
+
+def build_model():
+    model = keras.Sequential([
+      layers.Dense(150, activation=tf.nn.relu, input_shape=[len(train_dataset.keys())]),
+      layers.Dense(70, activation=tf.nn.relu),
+      layers.Dense(1)
+    ])
+
+    optimizer = tf.keras.optimizers.RMSprop(0.00001)
+
+    model.compile(loss='mean_squared_error',
+                optimizer=optimizer,
+                metrics=['mean_absolute_error', 'mean_squared_error'])
+    return model
+
+def norm(x):
+  return (x - train_stats['mean']) / train_stats['std']
+
+
+if 1==1:
+    timeout_team = game.loc[(game.timeout == 1)]
+    timeout = timeout_team.loc[(timeout_team.timeout_team == '1')]
+    ntimeout = timeout_team.loc[(timeout_team.timeout_team == '-1')]
+    ntimeout = ntimeout.sample(n=len(timeout), random_state=1)
+    timeout_team = pd.concat([timeout, ntimeout])
+    timeout_team = toteam(timeout_team)
+    timeout_team.to_csv('wtf.csv', index=False)
+    raw_dataset = pd.read_csv("wtf.csv", low_memory = False)
+    dataset = raw_dataset.copy()
+    dataset.tail()
+    #dataset = dataset.astype(float)
+    
+    
+
+    
+    if 1==1:
+        train_dataset = dataset.sample(frac=0.75,random_state=0)
+        test_dataset = dataset.drop(train_dataset.index)
+
+        #sns.pairplot(train_dataset[["Btomorrow", "B1", "BHigh", "BUpStreak"]], diag_kind="kde")
+        train_stats = train_dataset.describe()
+        print(train_stats)
+        print('this stuff^^^%^$^%$^%%$^%$')
+        train_stats.pop("timeout_team")
+        train_stats = train_stats.transpose()
+        print(train_stats)
+
+        train_labels = train_dataset.pop('timeout_team')
+        test_labels = test_dataset.pop('timeout_team')
+
+
+        normed_train_data = norm(train_dataset)
+        normed_test_data = norm(test_dataset)
+
+        model = build_model()
+
+        model.summary()
+
+        example_batch = normed_train_data[:10]
+        example_result = model.predict(example_batch)
+        print(example_result)
+
+        EPOCHS = 1000
+
+        model = build_model()
+
+        # The patience parameter is the amount of epochs to check for improvement
+        early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+
+        history = model.fit(normed_train_data, train_labels, epochs=EPOCHS,
+                            validation_split = 0.2, verbose=0, callbacks=[early_stop, PrintDot()])
+
+
+        loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
+
+        print("Testing set Mean Abs Error: {:5.2f} B".format(mae))
+
+
+        test_predictions = model.predict(normed_test_data).flatten()
+        print(test_predictions)
+
+        correct = 0
+        incorrect = 0
+        for i in range(len(test_predictions)):
+            if(test_predictions[i] < 0):
+                test_predictions[i] = -1
+            else:
+                test_predictions[i] = 1
+            if(test_predictions[i] == test_labels[i]):
+                correct += 1
+            else:
+                incorrect += 1
+            break
+        print(correct)
+        print(incorrect)
+        
+    
+        
