@@ -15,7 +15,7 @@ import pandas as pd
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-game = pd.read_csv("testLast2.csv", low_memory = False)
+game = pd.read_csv("testLast3.csv", low_memory = False)
 
 game = game.loc[(game.SType == 'Regular') & (game.Week == 1) & (game.game_id == 2018090600)]
 PO = game.loc[(game.posteam == 'PHI') ]
@@ -211,30 +211,38 @@ def clean(training_df):
     training_df = training_df.drop(columns=['defteam'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['posteam'])], axis=1)
     training_df = training_df.drop(columns=['posteam'])
-    training_df = training_df.drop(columns=['air_yards'])
+    #training_df = training_df.drop(columns=['air_yards'])
     training_df = training_df.drop(columns=['assist_tackle_1_player_id'])
     training_df = training_df.drop(columns=['assist_tackle_1_player_name'])
-    training_df = training_df.drop(columns=['complete_pass'])
-    training_df = training_df.drop(columns=['extra_point_attempt'])
+    #training_df = training_df.drop(columns=['complete_pass'])
+    #training_df = training_df.drop(columns=['extra_point_attempt'])
     training_df = training_df.drop(columns=['extra_point_result'])
-    training_df = training_df.drop(columns=['field_goal_attempt'])
+    #training_df = training_df.drop(columns=['field_goal_attempt'])
     training_df = training_df.drop(columns=['field_goal_result'])
-    training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
-                'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
-                'fumble_lost', 'fumble_recovery_1_player_id', 'fumble_recovery_1_player_name', 'fumble_recovery_1_yards',
-                'fumbled_1_player_id', 'fumbled_1_player_name', 'game_id', 'incomplete_pass', 'interception',
-                'interception_player_id', 'interception_player_name', 'kick_distance', 'kicker_player_id', 
-                'kicker_player_name', 'kickoff_returner_player_id', 'kickoff_returner_player_name',
-                'pass_attempt', 'pass_defense_1_player_id', 'pass_defense_1_player_name', 'pass_location',
-                'pass_touchdown', 'passer_player_id', 'passer_player_name', 'penalty_player_id', 'penalty_player_name',
-                'penalty_team', 'penalty_yards', 'punt_attempt', 'punt_blocked', 'punt_returner_player_id',
-                'punt_returner_player_name', 'punter_player_id', 'punter_player_name', 'qb_hit', 'qb_hit_1_player_id',
-                'qb_hit_1_player_name', 'qb_kneel', 'qb_spike', 'receiver_player_id', 'receiver_player_name',
-                'return_yards', 'run_gap', 'run_location', 'rush_attempt', 'rush_touchdown', 'rusher_player_id',
-                'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
-                'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
-                'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration'])
+    #training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
+    #            'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
+    #            'fumble_lost', 'fumble_recovery_1_player_id', 'fumble_recovery_1_player_name', 'fumble_recovery_1_yards',
+    #            'fumbled_1_player_id', 'fumbled_1_player_name', 'game_id', 'incomplete_pass', 'interception',
+    #            'interception_player_id', 'interception_player_name', 'kick_distance', 'kicker_player_id', 
+    #            'kicker_player_name', 'kickoff_returner_player_id', 'kickoff_returner_player_name',
+    #            'pass_attempt', 'pass_defense_1_player_id', 'pass_defense_1_player_name', 'pass_location',
+    #            'pass_touchdown', 'passer_player_id', 'passer_player_name', 'penalty_player_id', 'penalty_player_name',
+    #            'penalty_team', 'penalty_yards', 'punt_attempt', 'punt_blocked', 'punt_returner_player_id',
+    #            'punt_returner_player_name', 'punter_player_id', 'punter_player_name', 'qb_hit', 'qb_hit_1_player_id',
+    #            'qb_hit_1_player_name', 'qb_kneel', 'qb_spike', 'receiver_player_id', 'receiver_player_name',
+    #            'return_yards', 'run_gap', 'run_location', 'rush_attempt', 'rush_touchdown', 'rusher_player_id',
+    #            'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
+    #            'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
+    #            'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
+    #            'yards_after_catch', 'yards_gained', 'duration'])
+    training_df = training_df.drop(columns=['forced_fumble_player_1_player_id', 'forced_fumble_player_1_player_name', 'fumble_recovery_1_player_id',
+                'fumble_recovery_1_player_name', 'game_id', 'fumbled_1_player_name', 'fumbled_1_player_id', 'interception_player_id',
+                'interception_player_name', 'kicker_player_id', 'kickoff_returner_player_name', 'kickoff_returner_player_id', 'kicker_player_name',
+                'pass_defense_1_player_id', 'pass_defense_1_player_name', 'pass_location', 'penalty_player_name', 'penalty_player_id', 'passer_player_name',
+                'passer_player_id', 'penalty_team', 'punt_returner_player_id', 'qb_hit_1_player_id', 'punter_player_name', 'punter_player_id',
+                'punt_returner_player_name', 'qb_hit_1_player_name', 'receiver_player_id', 'receiver_player_name', 'rusher_player_id', 'run_location',
+                'run_gap', 'rusher_player_name', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name', 'tackle_for_loss_1_player_name', 
+                'tackle_for_loss_1_player_id', 'timeout_team', 'two_point_conv_result'])
     return training_df
     
 import pandas as pd
@@ -366,30 +374,38 @@ def toteam(training_df):
     training_df = training_df.drop(columns=['defteam'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['posteam'])], axis=1)
     training_df = training_df.drop(columns=['posteam'])
-    training_df = training_df.drop(columns=['air_yards'])
+    #training_df = training_df.drop(columns=['air_yards'])
     training_df = training_df.drop(columns=['assist_tackle_1_player_id'])
     training_df = training_df.drop(columns=['assist_tackle_1_player_name'])
-    training_df = training_df.drop(columns=['complete_pass'])
-    training_df = training_df.drop(columns=['extra_point_attempt'])
+    #training_df = training_df.drop(columns=['complete_pass'])
+    #training_df = training_df.drop(columns=['extra_point_attempt'])
     training_df = training_df.drop(columns=['extra_point_result'])
-    training_df = training_df.drop(columns=['field_goal_attempt'])
+    #training_df = training_df.drop(columns=['field_goal_attempt'])
     training_df = training_df.drop(columns=['field_goal_result'])
-    training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
-                'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
-                'fumble_lost', 'fumble_recovery_1_player_id', 'fumble_recovery_1_player_name', 'fumble_recovery_1_yards',
-                'fumbled_1_player_id', 'fumbled_1_player_name', 'game_id', 'incomplete_pass', 'interception',
-                'interception_player_id', 'interception_player_name', 'kick_distance', 'kicker_player_id', 
-                'kicker_player_name', 'kickoff_returner_player_id', 'kickoff_returner_player_name',
-                'pass_attempt', 'pass_defense_1_player_id', 'pass_defense_1_player_name', 'pass_location',
-                'pass_touchdown', 'passer_player_id', 'passer_player_name', 'penalty_player_id', 'penalty_player_name',
-                'penalty_team', 'penalty_yards', 'punt_attempt', 'punt_blocked', 'punt_returner_player_id',
-                'punt_returner_player_name', 'punter_player_id', 'punter_player_name', 'qb_hit', 'qb_hit_1_player_id',
-                'qb_hit_1_player_name', 'qb_kneel', 'qb_spike', 'receiver_player_id', 'receiver_player_name',
-                'return_yards', 'run_gap', 'run_location', 'rush_attempt', 'rush_touchdown', 'rusher_player_id',
-                'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
-                'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
-                'third_down_failed', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration'])
+    #training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
+    #            'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
+    #            'fumble_lost', 'fumble_recovery_1_player_id', 'fumble_recovery_1_player_name', 'fumble_recovery_1_yards',
+    #            'fumbled_1_player_id', 'fumbled_1_player_name', 'game_id', 'incomplete_pass', 'interception',
+    #            'interception_player_id', 'interception_player_name', 'kick_distance', 'kicker_player_id', 
+    #            'kicker_player_name', 'kickoff_returner_player_id', 'kickoff_returner_player_name',
+    #            'pass_attempt', 'pass_defense_1_player_id', 'pass_defense_1_player_name', 'pass_location',
+    #            'pass_touchdown', 'passer_player_id', 'passer_player_name', 'penalty_player_id', 'penalty_player_name',
+    #            'penalty_team', 'penalty_yards', 'punt_attempt', 'punt_blocked', 'punt_returner_player_id',
+    #            'punt_returner_player_name', 'punter_player_id', 'punter_player_name', 'qb_hit', 'qb_hit_1_player_id',
+    #            'qb_hit_1_player_name', 'qb_kneel', 'qb_spike', 'receiver_player_id', 'receiver_player_name',
+    #            'return_yards', 'run_gap', 'run_location', 'rush_attempt', 'rush_touchdown', 'rusher_player_id',
+    #            'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
+    #            'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
+    #            'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
+    #            'yards_after_catch', 'yards_gained', 'duration'])
+    training_df = training_df.drop(columns=['forced_fumble_player_1_player_id', 'forced_fumble_player_1_player_name', 'fumble_recovery_1_player_id',
+                'fumble_recovery_1_player_name', 'game_id', 'fumbled_1_player_name', 'fumbled_1_player_id', 'interception_player_id',
+                'interception_player_name', 'kicker_player_id', 'kickoff_returner_player_name', 'kickoff_returner_player_id', 'kicker_player_name',
+                'pass_defense_1_player_id', 'pass_defense_1_player_name', 'pass_location', 'penalty_player_name', 'penalty_player_id', 'passer_player_name',
+                'passer_player_id', 'penalty_team', 'punt_returner_player_id', 'qb_hit_1_player_id', 'punter_player_name', 'punter_player_id',
+                'punt_returner_player_name', 'qb_hit_1_player_name', 'receiver_player_id', 'receiver_player_name', 'rusher_player_id', 'run_location',
+                'run_gap', 'rusher_player_name', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name', 'tackle_for_loss_1_player_name', 
+                'tackle_for_loss_1_player_id', 'two_point_conv_result'])
     return training_df
     
 gameDFTOTeam = toteam(gameDF)

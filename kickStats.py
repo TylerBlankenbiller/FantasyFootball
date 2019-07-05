@@ -14,9 +14,10 @@ def throws(x):
     d['name'] = d['name'][0]
     d['id'] = x['id'].unique()
     d['id'] = d['id'][0]
-    return pd.Series(d, index=['short', 'med', 'long', 'longest', 'name', 'id'])
+    d['attempt'] = d['attempt'].sum()
+    return pd.Series(d, index=['short', 'med', 'long', 'longest', 'attempt', 'name', 'id'])
     
-game = pd.read_csv("testLast2.csv", low_memory = False)
+game = pd.read_csv("testLast3.csv", low_memory = False)
 kick = pd.read_csv("allActualStats.csv", low_memory = False)
 
 game['percent'] = 0
