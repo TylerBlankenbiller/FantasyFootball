@@ -209,22 +209,11 @@ gg['HOffense'].replace(regex=True,inplace=True,to_replace=r' ',value=r'')
 gg['AOffense'].replace(regex=True,inplace=True,to_replace=r' ',value=r'')
 
 ##########################################################################################################################################
-#   Pass
+#   Pass or Run
 ##########################################################################################################################################
 passer = gg.copy()
-passer = passer.loc[(passer.passer_player_name.isin(Pplayer)) & (passer.HCoach.isin(Pplayer))]
-nField = gg.copy()
-print(nField.HCoach.unique())
-print(Pplayer)
-nField = nField.loc[(nField.HCoach.isin(Pplayer) & (nField.pass_attempt == 0))]
-passer = pd.concat([passer, nField])
-#field_goal_attempt = game.loc[(game.field_goal_attempt == 1)]
-#print(field_goal_attempt)
-#ntimeout = game.loc[(game.field_goal_attempt == 0)]
-#ntimeout = ntimeout.sample(n=len(field_goal_attempt), random_state=1)
-#field_goal_attempt = pd.concat([field_goal_attempt, ntimeout])
-#print(field_goal_attempt)
-def passer(training_df):
+passer = passer.loc[((passer.passer_player_name.isin(Pplayer) | (passer.rusher_player_name.isin(Pplayer))))]
+def passering(training_df):
     '''
         Change stats that are strings into dummy columns
         These will be stats that are given and don't happen during the play.
@@ -296,14 +285,14 @@ def passer(training_df):
                 'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
-gameDFPunteam = passer(gameDF)
+gameDFPunteam = passering(gameDF)
         
-punt_attempt = passer(punt_attempt)
-col_list = (gameDFPunteam.append([gameDFPunteam,punt_attempt])).columns.tolist()
+passer = passering(passer)
+col_list = (gameDFPunteam.append([gameDFPunteam,passer])).columns.tolist()
 gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
-punt_attempt = punt_attempt.loc[:, col_list].fillna(0)
-X = punt_attempt.drop('punt_attempt', axis=1)
-y = punt_attempt['punt_attempt']
+passer = passer.loc[:, col_list].fillna(0)
+X = passer.drop('pass_attempt', axis=1)
+y = passer['pass_attempt']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
@@ -313,19 +302,19 @@ random_forest.fit(X_train, y_train)
 
 y_predict = random_forest.predict(X_test)
 print(y_predict)
-print("Accuracy passer Attempt: ")
+print("Accuracy pass_attempt Attempt: ")
 ab = accuracy_score(y_test, y_predict)
 
 print(ab)
 
-gameDFPunteam = gameDFPunteam.drop('punt_attempt', axis=1)
+gameDFPunteam = gameDFPunteam.drop('pass_attempt', axis=1)
 y_predict = random_forest.predict(gameDFPunteam)
 print(y_predict)
 
-print(len(punt_attempt.loc[(punt_attempt.punt_attempt == 1)]))
-print(len(punt_attempt.loc[(punt_attempt.punt_attempt == 0)]))
+print(len(passer.loc[(passer.pass_attempt == 1)]))
+print(len(passer.loc[(passer.pass_attempt == 0)]))
 
-gameDF['punt_attempt'] = y_predict
+gameDF['pass_attempt'] = y_predict
 
 ##########################################################################################################################################
 #   Punt
