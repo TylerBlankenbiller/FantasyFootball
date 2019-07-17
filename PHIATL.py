@@ -210,9 +210,9 @@ gameDF = pd.DataFrame({'SType':['Regular'], 'Weather':['Rain'],	'Week':1, 'Year'
         'punter_player_id':0, 'punter_player_name':'a', 'qb_hit':0, 'qb_hit_1_player_id':0,
         'qb_hit_1_player_name':'a',	'qb_kneel':0, 'qb_spike':0, 'qtr':1, 
         'quarter_seconds_remaining':900, 'receiver_player_id':'0', 'receiver_player_name':'app',
-        'return_yards':0, 'run_gap':'a', 'run_location':'a', 'rush_attempt':0, 'rush_touchdown':0,
-        'rusher_player_id':0, 'rusher_player_name':'a', 'sack':0, 'safety':0, 'score_differential':0,
-        'solo_tackle_1_player_id':0, 'solo_tackle_1_player_name':'a', 'tackle_for_loss_1_player_id':0,
+        'return_yards':0, 'run_gap':'guard', 'run_location':'right', 'rush_attempt':0, 'rush_touchdown':0,
+        'rusher_player_id':0, 'rusher_player_name':'sammy', 'sack':0, 'safety':0, 'score_differential':0,
+        'solo_tackle_1_player_id':0, 'solo_tackle_1_player_name':'left', 'tackle_for_loss_1_player_id':0,
         'tackle_for_loss_1_player_name':'a', 'third_down_converted':0, 'third_down_failed':0, 'timeout':0,
         'timeout_team':'a', 'total_away_score':0, 'total_home_score':0, 'touchback':0, 
         'two_point_attempt':0, 'two_point_conv_result':0, 'yardline_100':75, 'yards_after_catch':0,
@@ -233,6 +233,516 @@ gg['HOffense'].replace(regex=True,inplace=True,to_replace=r' ',value=r'')
 gg['AOffense'].replace(regex=True,inplace=True,to_replace=r' ',value=r'')
 
 ##########################################################################################################################################
+#   Run Duration
+##########################################################################################################################################
+duration = gg.copy()
+duration = duration.loc[((duration.rusher_player_name == 'J.Ajayi') & (duration.HCoach.isin(Pplayer))) | ((duration.ADefense.isin(Pplayer)) & (duration.Year == 2018) & (duration.rush_attempt == 1))]
+#temp = int.loc[(int.interception == 1)]
+#int = int.loc[(int.interception == 0)]
+#int= int.sample(n=len(temp), random_state=1)
+#print(len(int))
+#print(len(temp))
+#int = pd.concat([int, temp])
+def Durations(training_df):
+    '''
+        Change stats that are strings into dummy columns
+        These will be stats that are given and don't happen during the play.
+        (I.E. Head Coach, Weather Type, Home Team, etc.)
+    '''
+    training_df = training_df.replace({'STL':'LA'}, regex=True)
+    training_df = training_df.replace({'SD':'LAC'}, regex=True)
+    training_df = training_df.replace({'JAC':'JAX'}, regex=True)
+    training_df['posteam'] = 'P' + training_df['posteam'].astype(str)
+    training_df['defteam'] = 'D' + training_df['defteam'].astype(str)
+    training_df['Weather'] = 'Weather' + training_df['Weather'].astype(str)
+    training_df['WDirection'] = training_df['WDirection'].astype(str)
+    training_df['HCoach'] = 'HCo' + training_df['HCoach'].astype(str)
+    training_df['HDefense'] = 'HDef' + training_df['HDefense'].astype(str)
+    training_df['ACoach'] = 'ACo' + training_df['ACoach'].astype(str)
+    training_df['ADefense'] = 'ADef' + training_df['ADefense'].astype(str)
+    training_df['AOffense'] = 'AOff' + training_df['AOffense'].astype(str)
+    training_df['run_location'] = 'RL' + training_df['run_location'].astype(str)
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    
+    training_df.loc[training_df.SType=='Regular', 'SType']='1'
+    training_df.loc[training_df.SType=='Pre', 'SType']='0'
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    training_df.loc[training_df.WTemp=='39/53', 'WTemp']='46'
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['AOffense'])], axis=1)
+    training_df = training_df.drop(columns=['AOffense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['ADefense'])], axis=1)
+    training_df = training_df.drop(columns=['ADefense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['ACoach'])], axis=1)
+    training_df = training_df.drop(columns=['ACoach'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['HOffense'])], axis=1)
+    training_df = training_df.drop(columns=['HOffense'])
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['HDefense'])], axis=1)
+    training_df = training_df.drop(columns=['HDefense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['HCoach'])], axis=1)
+    training_df = training_df.drop(columns=['HCoach'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['WDirection'])], axis=1)
+    training_df = training_df.drop(columns=['WDirection'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['Weather'])], axis=1)
+    training_df = training_df.drop(columns=['Weather'])
+
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['defteam'])], axis=1)
+    training_df = training_df.drop(columns=['defteam'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['posteam'])], axis=1)
+    training_df = training_df.drop(columns=['posteam'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['rusher_player_name'])], axis=1)
+    training_df = training_df.drop(columns=['rusher_player_name'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['run_location'])], axis=1)
+    training_df = training_df.drop(columns=['run_location'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['run_gap'])], axis=1)
+    training_df = training_df.drop(columns=['run_gap'])
+    training_df = training_df.drop(columns=['air_yards'])
+    training_df = training_df.drop(columns=['assist_tackle_1_player_id'])
+    training_df = training_df.drop(columns=['assist_tackle_1_player_name'])
+    training_df = training_df.drop(columns=['complete_pass'])
+    training_df = training_df.drop(columns=['extra_point_attempt'])
+    training_df = training_df.drop(columns=['extra_point_result'])
+    training_df = training_df.drop(columns=['field_goal_result'])
+    training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
+                'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
+                'fumble_lost', 'fumble_recovery_1_player_id', 'fumble_recovery_1_player_name', 'fumble_recovery_1_yards',
+                'fumbled_1_player_id', 'fumbled_1_player_name', 'game_id', 'incomplete_pass', 'interception',
+                'interception_player_id', 'interception_player_name', 'kick_distance', 'kicker_player_id', 
+                'kicker_player_name', 'kickoff_returner_player_id', 'kickoff_returner_player_name',
+                'pass_defense_1_player_id', 'pass_defense_1_player_name', 'pass_location',
+                'pass_touchdown', 'passer_player_id', 'passer_player_name', 'penalty_player_id', 'penalty_player_name',
+                'penalty_team', 'penalty_yards', 'punt_blocked', 'punt_returner_player_id',
+                'punt_returner_player_name', 'punter_player_id', 'punter_player_name', 'qb_hit', 'qb_hit_1_player_id',
+                'qb_hit_1_player_name', 'qb_kneel', 'qb_spike', 'receiver_player_id', 'receiver_player_name',
+                'return_yards', 'rush_attempt', 'rush_touchdown', 'rusher_player_id',
+                'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
+                'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
+                'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
+                'yards_after_catch', 'short', 'med', 'long', 'longest', 'attempt'])
+    return training_df
+    
+gameDFPunteam = Durations(gameDF)
+        
+duration = Durations(duration)
+col_list = (gameDFPunteam.append([gameDFPunteam,duration])).columns.tolist()
+gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+duration = duration.loc[:, col_list].fillna(0)
+duration = duration.astype(float)
+for col in duration.columns:
+    if statistics.pstdev(duration[col])  <= 0.06:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+        duration = duration.drop(columns=[col])
+        
+print('test')
+print(duration['duration'].mean())
+
+
+dataset = duration.copy()
+dataset.tail()
+
+train_dataset = dataset.sample(frac=0.75,random_state=0)
+test_dataset = dataset.drop(train_dataset.index)
+
+train_stats = train_dataset.describe()
+train_stats.pop("duration")
+train_stats = train_stats.transpose()
+print(train_stats)
+
+train_labels = train_dataset.pop('duration')
+test_labels = test_dataset.pop('duration')
+
+
+normed_train_data = norm(train_dataset)
+normed_test_data = norm(test_dataset)
+
+cols = len(train_dataset.columns)
+
+EPOCHS = 1000
+model = build_model()
+
+# The patience parameter is the amount of epochs to check for improvement
+early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+
+history = model.fit(normed_train_data, train_labels, epochs=EPOCHS,
+                    validation_split = 0.2, verbose=0, callbacks=[early_stop, PrintDot()])
+
+
+loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
+
+print("Testing set Mean Abs Error: {:5.2f} Duration".format(mae))
+
+
+test_predictions = model.predict(normed_test_data).flatten()
+
+
+##########################################################################################################################################
+#   Run yards_gained
+##########################################################################################################################################
+yards_gained = gg.copy()
+yards_gained = yards_gained.loc[((yards_gained.rusher_player_name == 'J.Ajayi') & (yards_gained.HCoach.isin(Pplayer))) | ((yards_gained.ADefense.isin(Pplayer)) & (yards_gained.Year == 2018) & (yards_gained.rush_attempt == 1))]
+#temp = int.loc[(int.interception == 1)]
+#int = int.loc[(int.interception == 0)]
+#int= int.sample(n=len(temp), random_state=1)
+#print(len(int))
+#print(len(temp))
+#int = pd.concat([int, temp])
+def rYardsGained(training_df):
+    '''
+        Change stats that are strings into dummy columns
+        These will be stats that are given and don't happen during the play.
+        (I.E. Head Coach, Weather Type, Home Team, etc.)
+    '''
+    training_df = training_df.replace({'STL':'LA'}, regex=True)
+    training_df = training_df.replace({'SD':'LAC'}, regex=True)
+    training_df = training_df.replace({'JAC':'JAX'}, regex=True)
+    training_df['posteam'] = 'P' + training_df['posteam'].astype(str)
+    training_df['defteam'] = 'D' + training_df['defteam'].astype(str)
+    training_df['Weather'] = 'Weather' + training_df['Weather'].astype(str)
+    training_df['WDirection'] = training_df['WDirection'].astype(str)
+    training_df['HCoach'] = 'HCo' + training_df['HCoach'].astype(str)
+    training_df['HDefense'] = 'HDef' + training_df['HDefense'].astype(str)
+    training_df['ACoach'] = 'ACo' + training_df['ACoach'].astype(str)
+    training_df['ADefense'] = 'ADef' + training_df['ADefense'].astype(str)
+    training_df['AOffense'] = 'AOff' + training_df['AOffense'].astype(str)
+    training_df['run_location'] = 'RL' + training_df['run_location'].astype(str)
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    
+    training_df.loc[training_df.SType=='Regular', 'SType']='1'
+    training_df.loc[training_df.SType=='Pre', 'SType']='0'
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    training_df.loc[training_df.WTemp=='39/53', 'WTemp']='46'
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['AOffense'])], axis=1)
+    training_df = training_df.drop(columns=['AOffense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['ADefense'])], axis=1)
+    training_df = training_df.drop(columns=['ADefense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['ACoach'])], axis=1)
+    training_df = training_df.drop(columns=['ACoach'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['HOffense'])], axis=1)
+    training_df = training_df.drop(columns=['HOffense'])
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['HDefense'])], axis=1)
+    training_df = training_df.drop(columns=['HDefense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['HCoach'])], axis=1)
+    training_df = training_df.drop(columns=['HCoach'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['WDirection'])], axis=1)
+    training_df = training_df.drop(columns=['WDirection'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['Weather'])], axis=1)
+    training_df = training_df.drop(columns=['Weather'])
+
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['defteam'])], axis=1)
+    training_df = training_df.drop(columns=['defteam'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['posteam'])], axis=1)
+    training_df = training_df.drop(columns=['posteam'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['rusher_player_name'])], axis=1)
+    training_df = training_df.drop(columns=['rusher_player_name'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['run_location'])], axis=1)
+    training_df = training_df.drop(columns=['run_location'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['run_gap'])], axis=1)
+    training_df = training_df.drop(columns=['run_gap'])
+    training_df = training_df.drop(columns=['air_yards'])
+    training_df = training_df.drop(columns=['assist_tackle_1_player_id'])
+    training_df = training_df.drop(columns=['assist_tackle_1_player_name'])
+    training_df = training_df.drop(columns=['complete_pass'])
+    training_df = training_df.drop(columns=['extra_point_attempt'])
+    training_df = training_df.drop(columns=['extra_point_result'])
+    training_df = training_df.drop(columns=['field_goal_result'])
+    training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
+                'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
+                'fumble_lost', 'fumble_recovery_1_player_id', 'fumble_recovery_1_player_name', 'fumble_recovery_1_yards',
+                'fumbled_1_player_id', 'fumbled_1_player_name', 'game_id', 'incomplete_pass', 'interception',
+                'interception_player_id', 'interception_player_name', 'kick_distance', 'kicker_player_id', 
+                'kicker_player_name', 'kickoff_returner_player_id', 'kickoff_returner_player_name',
+                'pass_defense_1_player_id', 'pass_defense_1_player_name', 'pass_location',
+                'pass_touchdown', 'passer_player_id', 'passer_player_name', 'penalty_player_id', 'penalty_player_name',
+                'penalty_team', 'penalty_yards', 'punt_blocked', 'punt_returner_player_id',
+                'punt_returner_player_name', 'punter_player_id', 'punter_player_name', 'qb_hit', 'qb_hit_1_player_id',
+                'qb_hit_1_player_name', 'qb_kneel', 'qb_spike', 'receiver_player_id', 'receiver_player_name',
+                'return_yards', 'rush_attempt', 'rush_touchdown', 'rusher_player_id',
+                'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
+                'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
+                'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+    return training_df
+    
+gameDFPunteam = rYardsGained(gameDF)
+        
+yards_gained = rYardsGained(yards_gained)
+col_list = (gameDFPunteam.append([gameDFPunteam,yards_gained])).columns.tolist()
+gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+yards_gained = yards_gained.loc[:, col_list].fillna(0)
+yards_gained = yards_gained.astype(float)
+for col in yards_gained.columns:
+    if statistics.pstdev(yards_gained[col])  <= 0.06:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+        yards_gained = yards_gained.drop(columns=[col])
+        
+print('test')
+print(yards_gained['yards_gained'].mean())
+
+
+dataset = yards_gained.copy()
+dataset.tail()
+
+train_dataset = dataset.sample(frac=0.75,random_state=0)
+test_dataset = dataset.drop(train_dataset.index)
+
+train_stats = train_dataset.describe()
+train_stats.pop("yards_gained")
+train_stats = train_stats.transpose()
+print(train_stats)
+
+train_labels = train_dataset.pop('yards_gained')
+test_labels = test_dataset.pop('yards_gained')
+
+
+normed_train_data = norm(train_dataset)
+normed_test_data = norm(test_dataset)
+
+cols = len(train_dataset.columns)
+
+EPOCHS = 1000
+model = build_model()
+
+# The patience parameter is the amount of epochs to check for improvement
+early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+
+history = model.fit(normed_train_data, train_labels, epochs=EPOCHS,
+                    validation_split = 0.2, verbose=0, callbacks=[early_stop, PrintDot()])
+
+
+loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
+
+print("Testing set Mean Abs Error: {:5.2f} B".format(mae))
+
+
+test_predictions = model.predict(normed_test_data).flatten()
+
+##########################################################################################################################################
+#   run_gap
+##########################################################################################################################################
+run_gap = gg.copy()
+run_gap = run_gap.loc[((run_gap.rusher_player_name == 'J.Ajayi') & (run_gap.HCoach.isin(Pplayer))) | ((run_gap.ADefense.isin(Pplayer)) & (run_gap.Year == 2018) & (run_gap.rush_attempt == 1))]
+#temp = int.loc[(int.interception == 1)]
+#int = int.loc[(int.interception == 0)]
+#int= int.sample(n=len(temp), random_state=1)
+#print(len(int))
+#print(len(temp))
+#int = pd.concat([int, temp])
+def runGap(training_df):
+    '''
+        Change stats that are strings into dummy columns
+        These will be stats that are given and don't happen during the play.
+        (I.E. Head Coach, Weather Type, Home Team, etc.)
+    '''
+    training_df = training_df.replace({'STL':'LA'}, regex=True)
+    training_df = training_df.replace({'SD':'LAC'}, regex=True)
+    training_df = training_df.replace({'JAC':'JAX'}, regex=True)
+    training_df['posteam'] = 'P' + training_df['posteam'].astype(str)
+    training_df['defteam'] = 'D' + training_df['defteam'].astype(str)
+    training_df['Weather'] = 'Weather' + training_df['Weather'].astype(str)
+    training_df['WDirection'] = training_df['WDirection'].astype(str)
+    training_df['HCoach'] = 'HCo' + training_df['HCoach'].astype(str)
+    training_df['HDefense'] = 'HDef' + training_df['HDefense'].astype(str)
+    training_df['ACoach'] = 'ACo' + training_df['ACoach'].astype(str)
+    training_df['ADefense'] = 'ADef' + training_df['ADefense'].astype(str)
+    training_df['AOffense'] = 'AOff' + training_df['AOffense'].astype(str)
+    training_df['run_location'] = 'RL' + training_df['run_location'].astype(str)
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    
+    training_df.loc[training_df.SType=='Regular', 'SType']='1'
+    training_df.loc[training_df.SType=='Pre', 'SType']='0'
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    training_df.loc[training_df.WTemp=='39/53', 'WTemp']='46'
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['AOffense'])], axis=1)
+    training_df = training_df.drop(columns=['AOffense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['ADefense'])], axis=1)
+    training_df = training_df.drop(columns=['ADefense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['ACoach'])], axis=1)
+    training_df = training_df.drop(columns=['ACoach'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['HOffense'])], axis=1)
+    training_df = training_df.drop(columns=['HOffense'])
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['HDefense'])], axis=1)
+    training_df = training_df.drop(columns=['HDefense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['HCoach'])], axis=1)
+    training_df = training_df.drop(columns=['HCoach'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['WDirection'])], axis=1)
+    training_df = training_df.drop(columns=['WDirection'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['Weather'])], axis=1)
+    training_df = training_df.drop(columns=['Weather'])
+
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['defteam'])], axis=1)
+    training_df = training_df.drop(columns=['defteam'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['posteam'])], axis=1)
+    training_df = training_df.drop(columns=['posteam'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['rusher_player_name'])], axis=1)
+    training_df = training_df.drop(columns=['rusher_player_name'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['run_location'])], axis=1)
+    training_df = training_df.drop(columns=['run_location'])
+    training_df = training_df.drop(columns=['air_yards'])
+    training_df = training_df.drop(columns=['assist_tackle_1_player_id'])
+    training_df = training_df.drop(columns=['assist_tackle_1_player_name'])
+    training_df = training_df.drop(columns=['complete_pass'])
+    training_df = training_df.drop(columns=['extra_point_attempt'])
+    training_df = training_df.drop(columns=['extra_point_result'])
+    training_df = training_df.drop(columns=['field_goal_result'])
+    training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
+                'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
+                'fumble_lost', 'fumble_recovery_1_player_id', 'fumble_recovery_1_player_name', 'fumble_recovery_1_yards',
+                'fumbled_1_player_id', 'fumbled_1_player_name', 'game_id', 'incomplete_pass', 'interception',
+                'interception_player_id', 'interception_player_name', 'kick_distance', 'kicker_player_id', 
+                'kicker_player_name', 'kickoff_returner_player_id', 'kickoff_returner_player_name',
+                'pass_defense_1_player_id', 'pass_defense_1_player_name', 'pass_location',
+                'pass_touchdown', 'passer_player_id', 'passer_player_name', 'penalty_player_id', 'penalty_player_name',
+                'penalty_team', 'penalty_yards', 'punt_blocked', 'punt_returner_player_id',
+                'punt_returner_player_name', 'punter_player_id', 'punter_player_name', 'qb_hit', 'qb_hit_1_player_id',
+                'qb_hit_1_player_name', 'qb_kneel', 'qb_spike', 'receiver_player_id', 'receiver_player_name',
+                'return_yards', 'rush_attempt', 'rush_touchdown', 'rusher_player_id',
+                'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
+                'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
+                'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
+                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+    return training_df
+    
+gameDFPunteam = runGap(gameDF)
+        
+run_gap = runGap(run_gap)
+col_list = (gameDFPunteam.append([gameDFPunteam,run_gap])).columns.tolist()
+gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+run_gap = run_gap.loc[:, col_list].fillna(0)
+X = run_gap.drop('run_gap', axis=1)
+y = run_gap['run_gap']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+
+random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+
+random_forest.fit(X_train, y_train)
+
+y_predict = random_forest.predict(X_test)
+print(y_predict)
+print("Accuracy run_gap Attempt: ")
+ab = accuracy_score(y_test, y_predict)
+
+print(ab)
+gameDFPunteam = gameDFPunteam.drop('run_gap', axis=1)
+y_predict = random_forest.predict(gameDFPunteam)
+print(y_predict)
+gameDF['run_gap'] = y_predict
+
+##########################################################################################################################################
+#   run_location
+##########################################################################################################################################
+run_location = gg.copy()
+run_location = run_location.loc[((run_location.rusher_player_name == 'J.Ajayi') & (run_location.HCoach.isin(Pplayer))) | ((run_location.ADefense.isin(Pplayer)) & (run_location.Year == 2018) & (run_location.rush_attempt == 1))]
+#temp = int.loc[(int.interception == 1)]
+#int = int.loc[(int.interception == 0)]
+#int= int.sample(n=len(temp), random_state=1)
+#print(len(int))
+#print(len(temp))
+#int = pd.concat([int, temp])
+def runLocation(training_df):
+    '''
+        Change stats that are strings into dummy columns
+        These will be stats that are given and don't happen during the play.
+        (I.E. Head Coach, Weather Type, Home Team, etc.)
+    '''
+    training_df = training_df.replace({'STL':'LA'}, regex=True)
+    training_df = training_df.replace({'SD':'LAC'}, regex=True)
+    training_df = training_df.replace({'JAC':'JAX'}, regex=True)
+    training_df['posteam'] = 'P' + training_df['posteam'].astype(str)
+    training_df['defteam'] = 'D' + training_df['defteam'].astype(str)
+    training_df['Weather'] = 'Weather' + training_df['Weather'].astype(str)
+    training_df['WDirection'] = training_df['WDirection'].astype(str)
+    training_df['HCoach'] = 'HCo' + training_df['HCoach'].astype(str)
+    training_df['HDefense'] = 'HDef' + training_df['HDefense'].astype(str)
+    training_df['ACoach'] = 'ACo' + training_df['ACoach'].astype(str)
+    training_df['ADefense'] = 'ADef' + training_df['ADefense'].astype(str)
+    training_df['AOffense'] = 'AOff' + training_df['AOffense'].astype(str)
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    
+    training_df.loc[training_df.SType=='Regular', 'SType']='1'
+    training_df.loc[training_df.SType=='Pre', 'SType']='0'
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    training_df.loc[training_df.WTemp=='39/53', 'WTemp']='46'
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['AOffense'])], axis=1)
+    training_df = training_df.drop(columns=['AOffense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['ADefense'])], axis=1)
+    training_df = training_df.drop(columns=['ADefense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['ACoach'])], axis=1)
+    training_df = training_df.drop(columns=['ACoach'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['HOffense'])], axis=1)
+    training_df = training_df.drop(columns=['HOffense'])
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['HDefense'])], axis=1)
+    training_df = training_df.drop(columns=['HDefense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['HCoach'])], axis=1)
+    training_df = training_df.drop(columns=['HCoach'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['WDirection'])], axis=1)
+    training_df = training_df.drop(columns=['WDirection'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['Weather'])], axis=1)
+    training_df = training_df.drop(columns=['Weather'])
+
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['defteam'])], axis=1)
+    training_df = training_df.drop(columns=['defteam'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['posteam'])], axis=1)
+    training_df = training_df.drop(columns=['posteam'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['rusher_player_name'])], axis=1)
+    training_df = training_df.drop(columns=['rusher_player_name'])
+    training_df = training_df.drop(columns=['air_yards'])
+    training_df = training_df.drop(columns=['assist_tackle_1_player_id'])
+    training_df = training_df.drop(columns=['assist_tackle_1_player_name'])
+    training_df = training_df.drop(columns=['complete_pass'])
+    training_df = training_df.drop(columns=['extra_point_attempt'])
+    training_df = training_df.drop(columns=['extra_point_result'])
+    training_df = training_df.drop(columns=['field_goal_result'])
+    training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
+                'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
+                'fumble_lost', 'fumble_recovery_1_player_id', 'fumble_recovery_1_player_name', 'fumble_recovery_1_yards',
+                'fumbled_1_player_id', 'fumbled_1_player_name', 'game_id', 'incomplete_pass', 'interception',
+                'interception_player_id', 'interception_player_name', 'kick_distance', 'kicker_player_id', 
+                'kicker_player_name', 'kickoff_returner_player_id', 'kickoff_returner_player_name',
+                'pass_defense_1_player_id', 'pass_defense_1_player_name', 'pass_location',
+                'pass_touchdown', 'passer_player_id', 'passer_player_name', 'penalty_player_id', 'penalty_player_name',
+                'penalty_team', 'penalty_yards', 'punt_blocked', 'punt_returner_player_id',
+                'punt_returner_player_name', 'punter_player_id', 'punter_player_name', 'qb_hit', 'qb_hit_1_player_id',
+                'qb_hit_1_player_name', 'qb_kneel', 'qb_spike', 'receiver_player_id', 'receiver_player_name',
+                'return_yards', 'run_gap', 'rush_attempt', 'rush_touchdown', 'rusher_player_id',
+                'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
+                'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
+                'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
+                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+    return training_df
+    
+gameDFPunteam = runLocation(gameDF)
+        
+run_location = runLocation(run_location)
+col_list = (gameDFPunteam.append([gameDFPunteam,run_location])).columns.tolist()
+gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+run_location = run_location.loc[:, col_list].fillna(0)
+X = run_location.drop('run_location', axis=1)
+y = run_location['run_location']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+
+random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+
+random_forest.fit(X_train, y_train)
+
+y_predict = random_forest.predict(X_test)
+print(y_predict)
+print("Accuracy run_location Attempt: ")
+ab = accuracy_score(y_test, y_predict)
+
+print(ab)
+gameDFPunteam = gameDFPunteam.drop('run_location', axis=1)
+y_predict = random_forest.predict(gameDFPunteam)
+print(y_predict)
+gameDF['run_location'] = y_predict
+
+##########################################################################################################################################
 #   rusher_player_name
 ##########################################################################################################################################
 rusher_player_name = gg.copy()
@@ -243,7 +753,116 @@ rusher_player_name = rusher_player_name.loc[((rusher_player_name.rusher_player_n
 #print(len(int))
 #print(len(temp))
 #int = pd.concat([int, temp])
-def afterCatch(training_df):
+def rusherName(training_df):
+    '''
+        Change stats that are strings into dummy columns
+        These will be stats that are given and don't happen during the play.
+        (I.E. Head Coach, Weather Type, Home Team, etc.)
+    '''
+    training_df = training_df.replace({'STL':'LA'}, regex=True)
+    training_df = training_df.replace({'SD':'LAC'}, regex=True)
+    training_df = training_df.replace({'JAC':'JAX'}, regex=True)
+    training_df['posteam'] = 'P' + training_df['posteam'].astype(str)
+    training_df['defteam'] = 'D' + training_df['defteam'].astype(str)
+    training_df['Weather'] = 'Weather' + training_df['Weather'].astype(str)
+    training_df['WDirection'] = training_df['WDirection'].astype(str)
+    training_df['HCoach'] = 'HCo' + training_df['HCoach'].astype(str)
+    training_df['HDefense'] = 'HDef' + training_df['HDefense'].astype(str)
+    training_df['ACoach'] = 'ACo' + training_df['ACoach'].astype(str)
+    training_df['ADefense'] = 'ADef' + training_df['ADefense'].astype(str)
+    training_df['AOffense'] = 'AOff' + training_df['AOffense'].astype(str)
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    
+    training_df.loc[training_df.SType=='Regular', 'SType']='1'
+    training_df.loc[training_df.SType=='Pre', 'SType']='0'
+    training_df.loc[training_df.posteam_type=='home', 'posteam_type']='1'
+    training_df.loc[training_df.posteam_type=='away', 'posteam_type']='0'
+    training_df.loc[training_df.WTemp=='39/53', 'WTemp']='46'
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['AOffense'])], axis=1)
+    training_df = training_df.drop(columns=['AOffense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['ADefense'])], axis=1)
+    training_df = training_df.drop(columns=['ADefense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['ACoach'])], axis=1)
+    training_df = training_df.drop(columns=['ACoach'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['HOffense'])], axis=1)
+    training_df = training_df.drop(columns=['HOffense'])
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['HDefense'])], axis=1)
+    training_df = training_df.drop(columns=['HDefense'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['HCoach'])], axis=1)
+    training_df = training_df.drop(columns=['HCoach'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['WDirection'])], axis=1)
+    training_df = training_df.drop(columns=['WDirection'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['Weather'])], axis=1)
+    training_df = training_df.drop(columns=['Weather'])
+
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['defteam'])], axis=1)
+    training_df = training_df.drop(columns=['defteam'])
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['posteam'])], axis=1)
+    training_df = training_df.drop(columns=['posteam'])
+    training_df = training_df.drop(columns=['air_yards'])
+    training_df = training_df.drop(columns=['assist_tackle_1_player_id'])
+    training_df = training_df.drop(columns=['assist_tackle_1_player_name'])
+    training_df = training_df.drop(columns=['complete_pass'])
+    training_df = training_df.drop(columns=['extra_point_attempt'])
+    training_df = training_df.drop(columns=['extra_point_result'])
+    training_df = training_df.drop(columns=['field_goal_result'])
+    training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
+                'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
+                'fumble_lost', 'fumble_recovery_1_player_id', 'fumble_recovery_1_player_name', 'fumble_recovery_1_yards',
+                'fumbled_1_player_id', 'fumbled_1_player_name', 'game_id', 'incomplete_pass', 'interception',
+                'interception_player_id', 'interception_player_name', 'kick_distance', 'kicker_player_id', 
+                'kicker_player_name', 'kickoff_returner_player_id', 'kickoff_returner_player_name',
+                'pass_defense_1_player_id', 'pass_defense_1_player_name', 'pass_location',
+                'pass_touchdown', 'passer_player_id', 'passer_player_name', 'penalty_player_id', 'penalty_player_name',
+                'penalty_team', 'penalty_yards', 'punt_blocked', 'punt_returner_player_id',
+                'punt_returner_player_name', 'punter_player_id', 'punter_player_name', 'qb_hit', 'qb_hit_1_player_id',
+                'qb_hit_1_player_name', 'qb_kneel', 'qb_spike', 'receiver_player_id', 'receiver_player_name',
+                'return_yards', 'run_gap', 'run_location', 'rush_attempt', 'rush_touchdown', 'rusher_player_id',
+                'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
+                'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
+                'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
+                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+    return training_df
+    
+gameDFPunteam = rusherName(gameDF)
+        
+rusher_player_name = rusherName(rusher_player_name)
+col_list = (gameDFPunteam.append([gameDFPunteam,rusher_player_name])).columns.tolist()
+gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+rusher_player_name = rusher_player_name.loc[:, col_list].fillna(0)
+X = rusher_player_name.drop('rusher_player_name', axis=1)
+y = rusher_player_name['rusher_player_name']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+
+random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+
+random_forest.fit(X_train, y_train)
+
+y_predict = random_forest.predict(X_test)
+print(y_predict)
+print("Accuracy rusher_player_name Attempt: ")
+ab = accuracy_score(y_test, y_predict)
+
+print(ab)
+gameDFPunteam = gameDFPunteam.drop('rusher_player_name', axis=1)
+y_predict = random_forest.predict(gameDFPunteam)
+print(y_predict)
+gameDF['rusher_player_name'] = y_predict
+
+##########################################################################################################################################
+#   Pass Duration
+##########################################################################################################################################
+passDuration = gg.copy()
+passDuration = passDuration.loc[((passDuration.receiver_player_name == 'D.Jones') & (passDuration.HCoach.isin(Pplayer))) | ((passDuration.ADefense.isin(Pplayer)) & (passDuration.Year == 2018) & (passDuration.pass_attempt == 1))]
+#temp = int.loc[(int.interception == 1)]
+#int = int.loc[(int.interception == 0)]
+#int= int.sample(n=len(temp), random_state=1)
+#print(len(int))
+#print(len(temp))
+#int = pd.concat([int, temp])
+def PDurations(training_df):
     '''
         Change stats that are strings into dummy columns
         These will be stats that are given and don't happen during the play.
@@ -276,13 +895,13 @@ def afterCatch(training_df):
     training_df = training_df.drop(columns=['AOffense'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['ADefense'])], axis=1)
     training_df = training_df.drop(columns=['ADefense'])
-    #training_df = pd.concat([training_df, pd.get_dummies(training_df['ACoach'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['ACoach'])], axis=1)
     training_df = training_df.drop(columns=['ACoach'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['HOffense'])], axis=1)
     training_df = training_df.drop(columns=['HOffense'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['HDefense'])], axis=1)
     training_df = training_df.drop(columns=['HDefense'])
-    #training_df = pd.concat([training_df, pd.get_dummies(training_df['HCoach'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies(training_df['HCoach'])], axis=1)
     training_df = training_df.drop(columns=['HCoach'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['WDirection'])], axis=1)
     training_df = training_df.drop(columns=['WDirection'])
@@ -307,7 +926,7 @@ def afterCatch(training_df):
     training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
                 'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
                 'fumble_lost', 'fumble_recovery_1_player_id', 'fumble_recovery_1_player_name', 'fumble_recovery_1_yards',
-                'fumbled_1_player_id', 'fumbled_1_player_name', 'game_id', 'incomplete_pass',
+                'fumbled_1_player_id', 'fumbled_1_player_name', 'game_id',
                 'interception_player_id', 'interception_player_name', 'kick_distance', 'kicker_player_id', 
                 'kicker_player_name', 'kickoff_returner_player_id', 'kickoff_returner_player_name',
                 'pass_defense_1_player_id',
@@ -319,42 +938,67 @@ def afterCatch(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_gained', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
-gameDFPunteam = afterCatch(gameDF)
+gameDFPunteam = PDurations(gameDF)
         
-rusher_player_name = afterCatch(rusher_player_name)
-col_list = (gameDFPunteam.append([gameDFPunteam,rusher_player_name])).columns.tolist()
+passDuration = PDurations(passDuration)
+col_list = (gameDFPunteam.append([gameDFPunteam,passDuration])).columns.tolist()
 gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
-rusher_player_name = rusher_player_name.loc[:, col_list].fillna(0)
-rusher_player_name = rusher_player_name.astype(float)
-X = complete.drop('rusher_player_name', axis=1)
-y = complete['rusher_player_name']
+passDuration = passDuration.loc[:, col_list].fillna(0)
+passDuration = passDuration.astype(float)
+for col in passDuration.columns:
+    if statistics.pstdev(passDuration[col])  <= 0.1:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+        passDuration = passDuration.drop(columns=[col])
+        
+print('test')
+print(passDuration['duration'].mean())
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
 
-random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+dataset = passDuration.copy()
+dataset.tail()
 
-random_forest.fit(X_train, y_train)
+train_dataset = dataset.sample(frac=0.75,random_state=0)
+test_dataset = dataset.drop(train_dataset.index)
 
-y_predict = random_forest.predict(X_test)
-print(y_predict)
-print("Accuracy rusher_player_name Attempt: ")
-ab = accuracy_score(y_test, y_predict)
+train_stats = train_dataset.describe()
+train_stats.pop("duration")
+train_stats = train_stats.transpose()
+print(train_stats)
 
-print(ab)
-gameDFPunteam = gameDFPunteam.drop('rusher_player_name', axis=1)
-y_predict = random_forest.predict(gameDFPunteam)
-print(y_predict)
-gameDF['rusher_player_name'] = y_predict
+train_labels = train_dataset.pop('duration')
+test_labels = test_dataset.pop('duration')
+
+
+normed_train_data = norm(train_dataset)
+normed_test_data = norm(test_dataset)
+
+cols = len(train_dataset.columns)
+
+EPOCHS = 1000
+model = build_model()
+
+# The patience parameter is the amount of epochs to check for improvement
+early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+
+history = model.fit(normed_train_data, train_labels, epochs=EPOCHS,
+                    validation_split = 0.2, verbose=0, callbacks=[early_stop, PrintDot()])
+
+
+loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
+
+print("Testing set Mean Abs Error: {:5.2f} passDuration".format(mae))
+
+
+test_predictions = model.predict(normed_test_data).flatten()
 
 
 ##########################################################################################################################################
 #   yards_after_catch
 ##########################################################################################################################################
 yards_after_catch = gg.copy()
-yards_after_catch = yards_after_catch.loc[((yards_after_catch.pass_defense_1_player_id == 'D.Jones') | (yards_after_catch.passer_player_name=='N.Foles') | (yards_after_catch.receiver_player_id=='D.Goedert')) & (yards_after_catch.pass_attempt == 1) & (yards_after_catch.interception == 0)]
+yards_after_catch = yards_after_catch.loc[((yards_after_catch.pass_defense_1_player_id == 'D.Goedert') | (yards_after_catch.passer_player_name=='N.Foles') | (yards_after_catch.receiver_player_id=='D.Goedert')) & (yards_after_catch.pass_attempt == 1) & (yards_after_catch.interception == 0)]
 #temp = int.loc[(int.interception == 1)]
 #int = int.loc[(int.interception == 0)]
 #int= int.sample(n=len(temp), random_state=1)
@@ -1652,17 +2296,6 @@ gameDF['timeout'] = y_predict
 ##########################################################################################################################################
 #   Field Goal
 ##########################################################################################################################################
-field_goal_attempt = gg.copy()
-field = field_goal_attempt.loc[(field_goal_attempt.kicker_player_name.isin(Pplayer))]
-nField = gg.copy()
-nField = nField.loc[(nField.HCoach.isin(Pplayer) & (nField.field_goal_attempt == 0))]
-field_goal_attempt = pd.concat([field_goal_attempt, nField])
-#field_goal_attempt = game.loc[(game.field_goal_attempt == 1)]
-#print(field_goal_attempt)
-#ntimeout = game.loc[(game.field_goal_attempt == 0)]
-#ntimeout = ntimeout.sample(n=len(field_goal_attempt), random_state=1)
-#field_goal_attempt = pd.concat([field_goal_attempt, ntimeout])
-#print(field_goal_attempt)
 def fieldGoal(training_df):
     '''
         Change stats that are strings into dummy columns
@@ -1734,46 +2367,55 @@ def fieldGoal(training_df):
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
                 'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
-    
-gameDFTOTeam = fieldGoal(gameDF)
-        
-field_goal_attempt = fieldGoal(field_goal_attempt)
-col_list = (gameDFTOTeam.append([gameDFTOTeam,field_goal_attempt])).columns.tolist()
-gameDFTOTeam = gameDFTOTeam.loc[:, col_list].fillna(0)
-field_goal_attempt = field_goal_attempt.loc[:, col_list].fillna(0)
-X = field_goal_attempt.drop('field_goal_attempt', axis=1)
-y = field_goal_attempt['field_goal_attempt']
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+def predFieldGoal(gameDF):
+    field_goal_attempt = gg.copy()
+    field = field_goal_attempt.loc[(field_goal_attempt.kicker_player_name.isin(Pplayer))]
+    nField = gg.copy()
+    nField = nField.loc[(nField.HCoach.isin(Pplayer) & (nField.field_goal_attempt == 0))]
+    field_goal_attempt = pd.concat([field_goal_attempt, nField])
+    #field_goal_attempt = game.loc[(game.field_goal_attempt == 1)]
+    #print(field_goal_attempt)
+    #ntimeout = game.loc[(game.field_goal_attempt == 0)]
+    #ntimeout = ntimeout.sample(n=len(field_goal_attempt), random_state=1)
+    #field_goal_attempt = pd.concat([field_goal_attempt, ntimeout])
+    #print(field_goal_attempt)    
+    gameDFTOTeam = fieldGoal(gameDF)
+            
+    field_goal_attempt = fieldGoal(field_goal_attempt)
+    col_list = (gameDFTOTeam.append([gameDFTOTeam,field_goal_attempt])).columns.tolist()
+    gameDFTOTeam = gameDFTOTeam.loc[:, col_list].fillna(0)
+    field_goal_attempt = field_goal_attempt.loc[:, col_list].fillna(0)
+    X = field_goal_attempt.drop('field_goal_attempt', axis=1)
+    y = field_goal_attempt['field_goal_attempt']
 
-random_forest = RandomForestClassifier(n_estimators=100, max_depth=1000, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
-random_forest.fit(X_train, y_train)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=1000, random_state=1)
 
-y_predict = random_forest.predict(X_test)
-print(y_predict)
-print("Accuracy Field Goal Attempt: ")
-ab = accuracy_score(y_test, y_predict)
+    random_forest.fit(X_train, y_train)
 
-print(ab)
+    y_predict = random_forest.predict(X_test)
+    print(y_predict)
+    print("Accuracy Field Goal Attempt: ")
+    ab = accuracy_score(y_test, y_predict)
 
-gameDFTOTeam = gameDFTOTeam.drop('field_goal_attempt', axis=1)
-y_predict = random_forest.predict(gameDFTOTeam)
-print(y_predict)
+    print(ab)
 
-print(len(field_goal_attempt.loc[(field_goal_attempt.field_goal_attempt == 1)]))
-print(len(field_goal_attempt.loc[(field_goal_attempt.field_goal_attempt == 0)]))
+    gameDFTOTeam = gameDFTOTeam.drop('field_goal_attempt', axis=1)
+    y_predict = random_forest.predict(gameDFTOTeam)
+    print(y_predict)
 
-gameDF['field_goal_attempt'] = y_predict
+    print(len(field_goal_attempt.loc[(field_goal_attempt.field_goal_attempt == 1)]))
+    print(len(field_goal_attempt.loc[(field_goal_attempt.field_goal_attempt == 0)]))
+
+    gameDF['field_goal_attempt'] = y_predict
+    return(gameDF['field_goal_attempt'])
     
         
 ##########################################################################################################################################
 #   field_goal_result
 ##########################################################################################################################################
-field_goal_result = field.loc[(field.field_goal_attempt == 1)]
-print(len(field_goal_result.loc[(field_goal_result.field_goal_result == 'made')]))
-print(len(field_goal_result.loc[(field_goal_result.field_goal_result == 'missed')]))
-#print(field_goal_result)
 def kicker(training_df):
     '''
         Change stats that are strings into dummy columns
@@ -1848,29 +2490,70 @@ def kicker(training_df):
                 'yards_after_catch', 'yards_gained', 'duration', 'attempt', 'longest'])
     return training_df
     
-gameDFTOTeam = kicker(gameDF)
-        
-field_goal_result = kicker(field_goal_result)
-col_list = (gameDFTOTeam.append([gameDFTOTeam,field_goal_result])).columns.tolist()
-gameDFTOTeam = gameDFTOTeam.loc[:, col_list].fillna(0)
-field_goal_result = field_goal_result.loc[:, col_list].fillna(0)
-X = field_goal_result.drop('field_goal_result', axis=1)
-y = field_goal_result['field_goal_result']
+def predFGResult(gameDF):
+    field_goal_attempt = gg.copy()
+    field = field_goal_attempt.loc[(field_goal_attempt.kicker_player_name.isin(Pplayer))]
+    nField = gg.copy()
+    nField = nField.loc[(nField.HCoach.isin(Pplayer) & (nField.field_goal_attempt == 0))]
+    field_goal_attempt = pd.concat([field_goal_attempt, nField])
+    field_goal_result = field.loc[(field.field_goal_attempt == 1)]
+    print(len(field_goal_result.loc[(field_goal_result.field_goal_result == 'made')]))
+    print(len(field_goal_result.loc[(field_goal_result.field_goal_result == 'missed')]))
+    #print(field_goal_result)
+    
+    gameDF['short'] = field_goal_result['short'].iloc[0]
+    gameDF['med'] = field_goal_result['med'].iloc[0]
+    gameDF['long'] = field_goal_result['long'].iloc[0]
+    gameDF['longest'] = field_goal_result['longest'].iloc[0]
+    gameDF['attempt'] = field_goal_result['attempt'].iloc[0]
+    gameDF['acc'] = field_goal_result['acc'].iloc[0]
+    
+    gameDFTOTeam = kicker(gameDF)
+            
+    field_goal_result = kicker(field_goal_result)
+    col_list = (gameDFTOTeam.append([gameDFTOTeam,field_goal_result])).columns.tolist()
+    gameDFTOTeam = gameDFTOTeam.loc[:, col_list].fillna(0)
+    field_goal_result = field_goal_result.loc[:, col_list].fillna(0)
+    X = field_goal_result.drop('field_goal_result', axis=1)
+    y = field_goal_result['field_goal_result']
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
-random_forest = RandomForestClassifier(n_estimators=20, max_depth=None, random_state=1)
+    random_forest = RandomForestClassifier(n_estimators=20, max_depth=None, random_state=1)
 
-random_forest.fit(X_train, y_train)
+    random_forest.fit(X_train, y_train)
 
-y_predict = random_forest.predict(X_test)
-print(y_predict)
-print("Accuracy Field Goal Result: ")
-ab = accuracy_score(y_test, y_predict)
-print(ab)
+    y_predict = random_forest.predict(X_test)
+    print(y_predict)
+    print("Accuracy Field Goal Result: ")
+    ab = accuracy_score(y_test, y_predict)
+    print(ab)
 
-gameDFTOTeam = gameDFTOTeam.drop('field_goal_result', axis=1)
-y_predict = random_forest.predict(gameDFTOTeam)
-print(y_predict)
+    gameDFTOTeam = gameDFTOTeam.drop('field_goal_result', axis=1)
+    y_predict = random_forest.predict(gameDFTOTeam)
+    print(y_predict)
+    print(gameDF['kick_distance'])
+    print(len(gameDF['kick_distance']))
+    print('kick distance')
+    print(field_goal_result['short'].iloc[0])
+    gameDF['field_goal_result'] = y_predict
+    print(gameDF)
+    return(gameDF['field_goal_result'])
 
-gameDF['field_goal_result'] = y_predict
+
+
+gameDF['field_goal_attempt'] = predFieldGoal(gameDF)
+if(gameDF['field_goal_attempt'][0] == 1):
+    gameDF['kick_distance'] = gameDF['yardline_100'] + 18
+    gameDF['field_goal_result'] = predFGResult(gameDF)
+        if(gameDF['field_goal_result'] == 'made'):
+            gameDF['posteam_score'] += 3
+            if(gameDF['posteam_type'] == 'home'):
+                gameDF['total_home_score'] += 3
+            else:
+                gameDF['total_away_score'] += 3
+
+a = predFGResult(gameDF)
+
+
+
