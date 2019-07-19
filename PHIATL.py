@@ -29,10 +29,10 @@ class PrintDot(keras.callbacks.Callback):
         if epoch % 100 == 0: print('')
         print('.', end='')
 
-def norm(x):
+def norm(x, train_stats):
     return (x - train_stats['mean']) / train_stats['std']
     
-def build_model():
+def build_model(train_dataset):
     model = keras.Sequential([
     layers.Dense(round(len(train_dataset.columns)*1.1), activation=tf.nn.relu, input_shape=[len(train_dataset.keys())]),
     layers.Dense(round(len(train_dataset.columns)*0.5), activation=tf.nn.relu),
@@ -316,7 +316,7 @@ def Durations(training_df):
     
 def predRunDuration(gameDF, rushPlayer):
     duration = gg.copy()
-    if(gameDF['posteam_type'] == 'home'):
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
         duration = duration.loc[((duration.rusher_player_name == rushPlayer) & (duration.HOffense.isin(Pplayer))) | ((duration.ADefense.isin(Pplayer)) & (duration.Year == 2018) & (duration.rush_attempt == 1))]
     else:
         duration = duration.loc[((duration.rusher_player_name == rushPlayer) & (duration.AOffense.isin(Pplayer))) | ((duration.HDefense.isin(Pplayer)) & (duration.Year == 2018) & (duration.rush_attempt == 1))]
@@ -329,16 +329,17 @@ def predRunDuration(gameDF, rushPlayer):
     gameDFPunteam = Durations(gameDF)
             
     duration = Durations(duration)
+    duration = duration.astype(float)
+    for col in duration.columns:
+        if statistics.pstdev(duration[col])  <= 0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+            duration = duration.drop(columns=[col])
     col_list = (gameDFPunteam.append([gameDFPunteam,duration])).columns.tolist()
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     duration = duration.loc[:, col_list].fillna(0)
-    duration = duration.astype(float)
-    for col in duration.columns:
-        if statistics.pstdev(duration[col])  <= 0.06:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
-            duration = duration.drop(columns=[col])
+    gameDFPunteam.pop("duration")
             
-    print('test')
-    print(duration['duration'].mean())
+    #print('test')
+    #print(duration['duration'].mean())
 
 
     dataset = duration.copy()
@@ -350,19 +351,19 @@ def predRunDuration(gameDF, rushPlayer):
     train_stats = train_dataset.describe()
     train_stats.pop("duration")
     train_stats = train_stats.transpose()
-    print(train_stats)
+    #print(train_stats)
 
     train_labels = train_dataset.pop('duration')
     test_labels = test_dataset.pop('duration')
 
 
-    normed_train_data = norm(train_dataset)
-    normed_test_data = norm(test_dataset)
+    normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
+    normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
 
     cols = len(train_dataset.columns)
 
     EPOCHS = 1000
-    model = build_model()
+    model = build_model(train_dataset)
 
     # The patience parameter is the amount of epochs to check for improvement
     early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
@@ -373,7 +374,7 @@ def predRunDuration(gameDF, rushPlayer):
 
     loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
 
-    print("Testing set Mean Abs Error: {:5.2f} Duration".format(mae))
+    #print("Testing set Mean Abs Error: {:5.2f} Duration".format(mae))
 
 
     test_predictions = model.predict(normed_test_data).flatten()
@@ -466,7 +467,7 @@ def rYardsGained(training_df):
     
 def predRushYards(gameDF, rushPlayer):
     yards_gained = gg.copy()
-    if(gameDF['posteam_type'.iloc[0]] == 'home'):
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
         yards_gained = yards_gained.loc[((yards_gained.rusher_player_name == rushPlayer) & (yards_gained.HOffense.isin(Pplayer))) | ((yards_gained.ADefense.isin(Pplayer)) & (yards_gained.Year == 2018) & (yards_gained.rush_attempt == 1))]
     else:
         yards_gained = yards_gained.loc[((yards_gained.rusher_player_name == rushPlayer) & (yards_gained.AOffense.isin(Pplayer))) | ((yards_gained.HDefense.isin(Pplayer)) & (yards_gained.Year == 2018) & (yards_gained.rush_attempt == 1))]
@@ -479,16 +480,19 @@ def predRushYards(gameDF, rushPlayer):
     gameDFPunteam = rYardsGained(gameDF)
             
     yards_gained = rYardsGained(yards_gained)
+    
+    yards_gained = yards_gained.astype(float)
+    for col in yards_gained.columns:
+        if statistics.pstdev(yards_gained[col])  <= 0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+            yards_gained = yards_gained.drop(columns=[col])
+    
     col_list = (gameDFPunteam.append([gameDFPunteam,yards_gained])).columns.tolist()
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     yards_gained = yards_gained.loc[:, col_list].fillna(0)
-    yards_gained = yards_gained.astype(float)
-    for col in yards_gained.columns:
-        if statistics.pstdev(yards_gained[col])  <= 0.06:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
-            yards_gained = yards_gained.drop(columns=[col])
-            
-    print('test')
-    print(yards_gained['yards_gained'].mean())
+
+    gameDFPunteam.pop("yards_gained")
+    #print('test')
+    #print(yards_gained['yards_gained'].mean())
 
 
     dataset = yards_gained.copy()
@@ -500,19 +504,18 @@ def predRushYards(gameDF, rushPlayer):
     train_stats = train_dataset.describe()
     train_stats.pop("yards_gained")
     train_stats = train_stats.transpose()
-    print(train_stats)
 
     train_labels = train_dataset.pop('yards_gained')
     test_labels = test_dataset.pop('yards_gained')
 
 
-    normed_train_data = norm(train_dataset)
-    normed_test_data = norm(test_dataset)
+    normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
+    normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
 
     cols = len(train_dataset.columns)
 
     EPOCHS = 1000
-    model = build_model()
+    model = build_model(train_dataset)
 
     # The patience parameter is the amount of epochs to check for improvement
     early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
@@ -523,7 +526,7 @@ def predRushYards(gameDF, rushPlayer):
 
     loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
 
-    print("Testing set Mean Abs Error: {:5.2f} B".format(mae))
+    #print("Testing set Mean Abs Error: {:5.2f} B".format(mae))
 
 
     test_predictions = model.predict(normed_test_data).flatten()
@@ -612,42 +615,42 @@ def runGap(training_df):
     return training_df
     
 def predRunGap(gameDF, rushPlayer):
-run_gap = gg.copy()
-if(gameDF['posteam_type'].iloc[0] == 'home'):
-    run_gap = run_gap.loc[((run_gap.rusher_player_name == rushPlayer) & (run_gap.HOffense.isin(Pplayer))) | ((run_gap.ADefense.isin(Pplayer)) & (run_gap.Year == 2018) & (run_gap.rush_attempt == 1))]
-else:
-    run_gap = run_gap.loc[((run_gap.rusher_player_name == rushPlayer) & (run_gap.AOffense.isin(Pplayer))) | ((run_gap.HDefense.isin(Pplayer)) & (run_gap.Year == 2018) & (run_gap.rush_attempt == 1))]
-#temp = int.loc[(int.interception == 1)]
-#int = int.loc[(int.interception == 0)]
-#int= int.sample(n=len(temp), random_state=1)
-#print(len(int))
-#print(len(temp))
-#int = pd.concat([int, temp])
-gameDFPunteam = runGap(gameDF)
-        
-run_gap = runGap(run_gap)
-col_list = (gameDFPunteam.append([gameDFPunteam,run_gap])).columns.tolist()
-gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
-run_gap = run_gap.loc[:, col_list].fillna(0)
-X = run_gap.drop('run_gap', axis=1)
-y = run_gap['run_gap']
+    run_gap = gg.copy()
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
+        run_gap = run_gap.loc[((run_gap.rusher_player_name == rushPlayer) & (run_gap.HOffense.isin(Pplayer))) | ((run_gap.ADefense.isin(Pplayer)) & (run_gap.Year == 2018) & (run_gap.rush_attempt == 1))]
+    else:
+        run_gap = run_gap.loc[((run_gap.rusher_player_name == rushPlayer) & (run_gap.AOffense.isin(Pplayer))) | ((run_gap.HDefense.isin(Pplayer)) & (run_gap.Year == 2018) & (run_gap.rush_attempt == 1))]
+    #temp = int.loc[(int.interception == 1)]
+    #int = int.loc[(int.interception == 0)]
+    #int= int.sample(n=len(temp), random_state=1)
+    #print(len(int))
+    #print(len(temp))
+    #int = pd.concat([int, temp])
+    gameDFPunteam = runGap(gameDF)
+            
+    run_gap = runGap(run_gap)
+    col_list = (gameDFPunteam.append([gameDFPunteam,run_gap])).columns.tolist()
+    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+    run_gap = run_gap.loc[:, col_list].fillna(0)
+    X = run_gap.drop('run_gap', axis=1)
+    y = run_gap['run_gap']
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
 
-random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
 
-random_forest.fit(X_train, y_train)
+    random_forest.fit(X_train, y_train)
 
-y_predict = random_forest.predict(X_test)
-print(y_predict)
-print("Accuracy run_gap Attempt: ")
-ab = accuracy_score(y_test, y_predict)
+    y_predict = random_forest.predict(X_test)
+    #print(y_predict)
+    #print("Accuracy run_gap Attempt: ")
+    ab = accuracy_score(y_test, y_predict)
 
-print(ab)
-gameDFPunteam = gameDFPunteam.drop('run_gap', axis=1)
-y_predict = random_forest.predict(gameDFPunteam)
-print(y_predict)
-gameDF['run_gap'] = y_predict
+    #print(ab)
+    gameDFPunteam = gameDFPunteam.drop('run_gap', axis=1)
+    y_predict = random_forest.predict(gameDFPunteam)
+    #print(y_predict)
+    gameDF['run_gap'] = y_predict
 
 ##########################################################################################################################################
 #   run_location
@@ -727,42 +730,42 @@ def runLocation(training_df):
     return training_df
     
 def predRunLocation(gameDF, rushPlayer):
-run_location = gg.copy()
-if(gameDF['posteam_type'].iloc[0] == 'home'):
-    run_location = run_location.loc[((run_location.rusher_player_name == rushPlayer) & (run_location.HOffense.isin(Pplayer))) | ((run_location.ADefense.isin(Pplayer)) & (run_location.Year == 2018) & (run_location.rush_attempt == 1))]
-else:
-    run_location = run_location.loc[((run_location.rusher_player_name == rushPlayer) & (run_location.AOffense.isin(Pplayer))) | ((run_location.HDefense.isin(Pplayer)) & (run_location.Year == 2018) & (run_location.rush_attempt == 1))]
-#temp = int.loc[(int.interception == 1)]
-#int = int.loc[(int.interception == 0)]
-#int= int.sample(n=len(temp), random_state=1)
-#print(len(int))
-#print(len(temp))
-#int = pd.concat([int, temp])
-gameDFPunteam = runLocation(gameDF)
-        
-run_location = runLocation(run_location)
-col_list = (gameDFPunteam.append([gameDFPunteam,run_location])).columns.tolist()
-gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
-run_location = run_location.loc[:, col_list].fillna(0)
-X = run_location.drop('run_location', axis=1)
-y = run_location['run_location']
+    run_location = gg.copy()
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
+        run_location = run_location.loc[((run_location.rusher_player_name == rushPlayer) & (run_location.HOffense.isin(Pplayer))) | ((run_location.ADefense.isin(Pplayer)) & (run_location.Year == 2018) & (run_location.rush_attempt == 1))]
+    else:
+        run_location = run_location.loc[((run_location.rusher_player_name == rushPlayer) & (run_location.AOffense.isin(Pplayer))) | ((run_location.HDefense.isin(Pplayer)) & (run_location.Year == 2018) & (run_location.rush_attempt == 1))]
+    #temp = int.loc[(int.interception == 1)]
+    #int = int.loc[(int.interception == 0)]
+    #int= int.sample(n=len(temp), random_state=1)
+    #print(len(int))
+    #print(len(temp))
+    #int = pd.concat([int, temp])
+    gameDFPunteam = runLocation(gameDF)
+            
+    run_location = runLocation(run_location)
+    col_list = (gameDFPunteam.append([gameDFPunteam,run_location])).columns.tolist()
+    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+    run_location = run_location.loc[:, col_list].fillna(0)
+    X = run_location.drop('run_location', axis=1)
+    y = run_location['run_location']
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
 
-random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
 
-random_forest.fit(X_train, y_train)
+    random_forest.fit(X_train, y_train)
 
-y_predict = random_forest.predict(X_test)
-print(y_predict)
-print("Accuracy run_location Attempt: ")
-ab = accuracy_score(y_test, y_predict)
+    y_predict = random_forest.predict(X_test)
+    #print(y_predict)
+    #print("Accuracy run_location Attempt: ")
+    ab = accuracy_score(y_test, y_predict)
 
-print(ab)
-gameDFPunteam = gameDFPunteam.drop('run_location', axis=1)
-y_predict = random_forest.predict(gameDFPunteam)
-print(y_predict)
-gameDF['run_location'] = y_predict
+    #print(ab)
+    gameDFPunteam = gameDFPunteam.drop('run_location', axis=1)
+    y_predict = random_forest.predict(gameDFPunteam)
+    #print(y_predict)
+    gameDF['run_location'] = y_predict
 
 ##########################################################################################################################################
 #   rusher_player_name
@@ -864,14 +867,14 @@ def predRushPlayer(gameDF):
     random_forest.fit(X_train, y_train)
 
     y_predict = random_forest.predict(X_test)
-    print(y_predict)
-    print("Accuracy rusher_player_name Attempt: ")
+    #print(y_predict)
+    #print("Accuracy rusher_player_name Attempt: ")
     ab = accuracy_score(y_test, y_predict)
 
-    print(ab)
+    #print(ab)
     gameDFPunteam = gameDFPunteam.drop('rusher_player_name', axis=1)
     y_predict = random_forest.predict(gameDFPunteam)
-    print(y_predict)
+    #print(y_predict)
     gameDF['rusher_player_name'] = y_predict
     return(gameDF['rusher_player_name'])
 
@@ -967,16 +970,17 @@ def predPassDuration(gameDF, receiverPlayer):
     gameDFPunteam = PDurations(gameDF)
             
     passDuration = PDurations(passDuration)
+    passDuration = passDuration.astype(float)
+    for col in passDuration.columns:
+        if statistics.pstdev(passDuration[col])  <= 0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+            passDuration = passDuration.drop(columns=[col])
     col_list = (gameDFPunteam.append([gameDFPunteam,passDuration])).columns.tolist()
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     passDuration = passDuration.loc[:, col_list].fillna(0)
-    passDuration = passDuration.astype(float)
-    for col in passDuration.columns:
-        if statistics.pstdev(passDuration[col])  <= 0.1:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
-            passDuration = passDuration.drop(columns=[col])
+    gameDFPunteam.pop('duration')
             
-    print('test')
-    print(passDuration['duration'].mean())
+    #print('test')
+    #print(passDuration['duration'].mean())
 
 
     dataset = passDuration.copy()
@@ -988,19 +992,19 @@ def predPassDuration(gameDF, receiverPlayer):
     train_stats = train_dataset.describe()
     train_stats.pop("duration")
     train_stats = train_stats.transpose()
-    print(train_stats)
+    #print(train_stats)
 
     train_labels = train_dataset.pop('duration')
     test_labels = test_dataset.pop('duration')
 
 
-    normed_train_data = norm(train_dataset)
-    normed_test_data = norm(test_dataset)
+    normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
+    normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
 
     cols = len(train_dataset.columns)
 
     EPOCHS = 1000
-    model = build_model()
+    model = build_model(train_dataset)
 
     # The patience parameter is the amount of epochs to check for improvement
     early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
@@ -1011,13 +1015,13 @@ def predPassDuration(gameDF, receiverPlayer):
 
     loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
 
-    print("Testing set Mean Abs Error: {:5.2f} passDuration".format(mae))
+    #print("Testing set Mean Abs Error: {:5.2f} passDuration".format(mae))
 
 
     test_predictions = model.predict(normed_test_data).flatten()
 
     temp = model.predict(gameDFPunteam).flatten()
-    return(temp[0])
+    #return(temp[0])
 
 
 ##########################################################################################################################################
@@ -1116,16 +1120,17 @@ def predYardsAfterCatch(gameDF, passPlayer, defPlayer, receiverPlayer):
     gameDFPunteam = afterCatch(gameDF)
             
     yards_after_catch = afterCatch(yards_after_catch)
+    yards_after_catch = yards_after_catch.astype(float)
+    for col in yards_after_catch.columns:
+        if statistics.pstdev(yards_after_catch[col])  <= 0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+            yards_after_catch = yards_after_catch.drop(columns=[col])
     col_list = (gameDFPunteam.append([gameDFPunteam,yards_after_catch])).columns.tolist()
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     yards_after_catch = yards_after_catch.loc[:, col_list].fillna(0)
-    yards_after_catch = yards_after_catch.astype(float)
-    for col in yards_after_catch.columns:
-        if statistics.pstdev(yards_after_catch[col])  <= 0.06:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
-            yards_after_catch = yards_after_catch.drop(columns=[col])
+    gameDFPunteam.pop("yards_after_catch")
             
-    print('test')
-    print(yards_after_catch['yards_after_catch'].mean())
+    #print('test')
+    #print(yards_after_catch['yards_after_catch'].mean())
 
 
     dataset = yards_after_catch.copy()
@@ -1137,19 +1142,19 @@ def predYardsAfterCatch(gameDF, passPlayer, defPlayer, receiverPlayer):
     train_stats = train_dataset.describe()
     train_stats.pop("yards_after_catch")
     train_stats = train_stats.transpose()
-    print(train_stats)
+    #print(train_stats)
 
     train_labels = train_dataset.pop('yards_after_catch')
     test_labels = test_dataset.pop('yards_after_catch')
 
 
-    normed_train_data = norm(train_dataset)
-    normed_test_data = norm(test_dataset)
+    normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
+    normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
 
     cols = len(train_dataset.columns)
 
     EPOCHS = 1000
-    model = build_model()
+    model = build_model(train_dataset)
 
     # The patience parameter is the amount of epochs to check for improvement
     early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
@@ -1160,7 +1165,7 @@ def predYardsAfterCatch(gameDF, passPlayer, defPlayer, receiverPlayer):
 
     loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
 
-    print("Testing set Mean Abs Error: {:5.2f} B".format(mae))
+    #print("Testing set Mean Abs Error: {:5.2f} B".format(mae))
 
 
     test_predictions = model.predict(normed_test_data).flatten()
@@ -1276,16 +1281,16 @@ def predCompletion(gameDF, passPlayer, defPlayer, receiverPlayer):
     random_forest.fit(X_train, y_train)
 
     y_predict = random_forest.predict(X_test)
-    print(y_predict)
-    print("Accuracy complete_pass Attempt: ")
+    #print(y_predict)
+    #print("Accuracy complete_pass Attempt: ")
     ab = accuracy_score(y_test, y_predict)
 
-    print(ab)
+    #print(ab)
     gameDFPunteam = gameDFPunteam.drop('complete_pass', axis=1)
     y_predict = random_forest.predict(gameDFPunteam)
-    print(y_predict)
-    print(len(complete.loc[((complete.complete_pass == 1))]))
-    print(len(complete.loc[((complete.complete_pass == 0))]))
+    #print(y_predict)
+    #print(len(complete.loc[((complete.complete_pass == 1))]))
+    #print(len(complete.loc[((complete.complete_pass == 0))]))
     gameDF['complete_pass'] = y_predict
     return(gameDF['complete_pass'])
 
@@ -1378,8 +1383,8 @@ def predInterception(gameDF, passPlayer, defPlayer, receiverPlayer):
     temp = int.loc[(int.interception == 1)]
     #int = int.loc[(int.interception == 0)]
     #int= int.sample(n=len(temp), random_state=1)
-    print(len(int))
-    print(len(temp))
+    #print(len(int))
+    #print(len(temp))
     #int = pd.concat([int, temp])
     gameDFPunteam = interception(gameDF)
             
@@ -1397,16 +1402,16 @@ def predInterception(gameDF, passPlayer, defPlayer, receiverPlayer):
     random_forest.fit(X_train, y_train)
 
     y_predict = random_forest.predict(X_test)
-    print(y_predict)
-    print("Accuracy interception Attempt: ")
+    #print(y_predict)
+    #print("Accuracy interception Attempt: ")
     ab = accuracy_score(y_test, y_predict)
 
-    print(ab)
+    #print(ab)
     gameDFPunteam = gameDFPunteam.drop('interception', axis=1)
     y_predict = random_forest.predict(gameDFPunteam)
-    print(y_predict)
-    print(len(int.loc[((int.interception == 1))]))
-    print(len(int.loc[((int.interception == 0))]))
+    #print(y_predict)
+    #print(len(int.loc[((int.interception == 1))]))
+    #print(len(int.loc[((int.interception == 0))]))
     gameDF['interception'] = y_predict
     return(gameDF['interception'])
 
@@ -1608,13 +1613,14 @@ def predAirYards(gameDF, passPlayer, defPlayer):
     aYards = aYards.loc[((aYards.pass_defense_1_player_name == defPlayer) | (aYards.passer_player_name == passPlayer)) & (aYards.pass_attempt == 1)]
     gameDFPunteam = airYards(gameDF)
     aYards = airYards(aYards)
+    aYards = aYards.astype(float)
+    for col in aYards.columns:
+        if statistics.pstdev(aYards[col])  <= 0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+            aYards = aYards.drop(columns=[col])
     col_list = (gameDFPunteam.append([gameDFPunteam,aYards])).columns.tolist()
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     aYards = aYards.loc[:, col_list].fillna(0)
-    aYards = aYards.astype(float)
-    for col in aYards.columns:
-        if statistics.pstdev(aYards[col])  <= 0.06:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
-            aYards = aYards.drop(columns=[col])
+    gameDFPunteam.pop("air_yards")
             
     print('test')
     print(aYards['air_yards'].mean())
@@ -1635,13 +1641,13 @@ def predAirYards(gameDF, passPlayer, defPlayer):
     test_labels = test_dataset.pop('air_yards')
 
 
-    normed_train_data = norm(train_dataset)
-    normed_test_data = norm(test_dataset)
+    normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
+    normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
 
     cols = len(train_dataset.columns)
 
     EPOCHS = 1000
-    model = build_model()
+    model = build_model(train_dataset)
 
     # The patience parameter is the amount of epochs to check for improvement
     early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
@@ -1881,7 +1887,7 @@ def predDefPlayer(gameDF, passPlayer):
     print(y_predict)
 
     gameDF['pass_defense_1_player_name'] = y_predict
-    return(gameDF['pass_defense_1_player_name']
+    return(gameDF['pass_defense_1_player_name'])
 
 ##########################################################################################################################################
 #   Pass Player
@@ -2098,6 +2104,7 @@ def predPassRun(gameDF):
     print(len(passer.loc[(passer.pass_attempt == 0)]))
 
     gameDF['pass_attempt'] = y_predict
+    print('PASSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS')
     return(gameDF['pass_attempt'])
 
 ##########################################################################################################################################
@@ -2592,6 +2599,64 @@ def predFGResult(gameDF):
     return(gameDF['field_goal_result'])
 
 
+    
+def change2Home(gameDF, hInt, hIncomplete, hComplete, h3rdConvert, h3rdFail, h4thConvert, h4thFail, hPassTD, hRushTD, hFumble, hHit, hFirstPass, hFirstRush):
+    gameDF['totinterception'] = hInt
+    gameDF['totincomplete_pass'] = hIncomplete
+    gameDF['totcomplete_pass'] = hComplete
+    gameDF['totThirdDown_convert'] = h3rdConvert
+    gameDF['totThirdDown_fail'] = h3rdFail
+    gameDF['totFourthDown_convert'] = h4thConvert
+    gameDF['totFourthDown_fail'] = h4thFail
+    gameDF['totPass_TD'] = hPassTD
+    gameDF['totRush_TD'] = hRushTD
+    gameDF['totfumble'] = hFumble
+    gameDF['totHit'] = hHit
+    gameDF['totfirst_down_rush'] = hFirstRush
+    gameDF['totfirst_down_pass'] = hFirstPass
+    return(gameDF)
+
+def change2Away(gameDF, aInt, aIncomplete, aComplete, a3rdConvert, a3rdFail, a4thConvert, a4thFail, aPassTD, aRushTD, aFumble, aHit, aFirstPass, aFirstRush):
+    gameDF['posteam_type'] = 'away'
+    gameDF['totinterception'] = aInt
+    gameDF['totincomplete_pass'] = aIncomplete
+    gameDF['totcomplete_pass'] = aComplete
+    gameDF['totThirdDown_convert'] = a3rdConvert
+    gameDF['totThirdDown_fail'] = a3rdFail
+    gameDF['totFourthDown_convert'] = a4thConvert
+    gameDF['totFourthDown_fail'] = a4thFail
+    gameDF['totPass_TD'] = aPassTD
+    gameDF['totRush_TD'] = aRushTD
+    gameDF['totfumble'] = aFumble
+    gameDF['totHit'] = aHit
+    gameDF['totfirst_down_rush'] = aFirstRush
+    gameDF['totfirst_down_pass'] = aFirstPass
+    return(gameDF)
+    
+def changeDefPos(gameDF):
+    #Change teams (Punt)
+    #Score
+    temp = gameDF['posteam_score']
+    gameDF['posteam_score'] = gameDF['defteam_score']
+    gameDF['defteam_score'] = temp
+        
+    #Possession
+    temp = gameDF['posteam']
+    gameDF['posteam'] = gameDF['defteam']
+    gameDF['defteam'] = temp
+        
+    #Timeouts
+    temp = gameDF['posteam_timeouts_remaining']
+    gameDF['posteam_timeouts_remaining'] = gameDF['defteam_timeouts_remaining']
+    gameDF['defteam_timeouts_remaining'] = temp
+    
+    gameDF['score_differential'] = gameDF['defteam_score'] - gameDF['posteam_score']
+        
+    #Drive
+    gameDF['drive'] += 1
+    return(gameDF)
+
+    
 hHit = 0
 aHit = 0
 hFirstRush = 0
@@ -2619,279 +2684,360 @@ aRushTD = 0
 hFumble = 0
 aFumble = 0
 
-#Kick a field Goal?
-gameDF['field_goal_attempt'] = predFieldGoal(gameDF)
-gameDF['punt_attempt'] = predPunt(gameDF)
-gameDF['pass_attempt'] = predPassRun(gameDF)
-if(gameDF['field_goal_attempt'].iloc[0] == 1):
-    #Check if Field Goal is Good
-    gameDF['kick_distance'] = gameDF['yardline_100'] + 18
-    gameDF['field_goal_result'] = predFGResult(gameDF)
-    if(gameDF['field_goal_result'].iloc[0] == 'made'):
-        #Add points for Field Goal
-        gameDF['posteam_score'] += 3
-        gameDF['score_differential'] = gameDF['defteam_score'] - gameDF['posteam_score']
-        if(gameDF['posteam_type'] == 'home'):
-            gameDF['total_home_score'] += 3
+while(gameDF['qtr'].iloc[0] < 5):
+    #Kick a field Goal?
+    gameDF['field_goal_attempt'] = predFieldGoal(gameDF)
+    gameDF['punt_attempt'] = predPunt(gameDF)
+    gameDF['pass_attempt'] = predPassRun(gameDF)
+    #################################################################################################################################
+    #
+    #   FIELD GOAL
+    #
+    #################################################################################################################################
+    if(gameDF['field_goal_attempt'].iloc[0] == 1):
+        print('FIELD GOAL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        #Check if Field Goal is Good
+        gameDF['kick_distance'] = gameDF['yardline_100'] + 18
+        gameDF['field_goal_result'] = predFGResult(gameDF)
+        if(gameDF['field_goal_result'].iloc[0] == 'made'):
+            #Add points for Field Goal
+            gameDF['posteam_score'] += 3
+            gameDF['score_differential'] = gameDF['defteam_score'] - gameDF['posteam_score']
+            if(gameDF['posteam_type'].iloc[0] == 'home'):
+                gameDF['total_home_score'] += 3
+            else:
+                gameDF['total_away_score'] += 3
+            gameDF['yardline_100'] = 75
         else:
-            gameDF['total_away_score'] += 3
-        gameDF['yardline_100'] = 75
-    else:
-        gameDF['yardline_100'] = 100 - gameDF['yardline_100']
-    #Change teams (Kickoff)
-    #Score
-    temp = gameDF['posteam_score']
-    gameDF['posteam_score'] = gameDF['defteam_score']
-    gameDF['defteam_score'] = temp
-        
-    #Possession
-    temp = gameDF['posteam']
-    gameDF['posteam'] = gameDF['defteam']
-    gameDF['defteam'] = temp
-        
-    #Timeouts
-    temp = gameDF['posteam_timeouts_remaining']
-    gameDF['posteam_timeouts_remaining'] = gameDF['defteam_timeouts_remaining']
-    gameDF['defteam_timeouts_remaining'] = temp
-        
-    #Drive
-    gameDF['drive'] += 1
-        
-    #Posteam Type
-    if(gameDF['posteam_type'] == 'home'):
-        gameDF['posteam_type'] = 'away'
-        gameDF['totinterception'] = aInt
-        gameDF['totincomplete_pass'] = aIncomplete
-        gameDF['totcomplete_pass'] = aComplete
-        gameDF['totThirdDown_convert'] = a3rdConvert
-        gameDF['totThirdDown_fail'] = a3rdFail
-        gameDF['totFourthDown_convert'] = a4thConvert
-        gameDF['totFourthDown_fail'] = a4thFail
-        gameDF['totPass_TD'] = aPassTD
-        gameDF['totRush_TD'] = aRushTD
-        gameDF['totfumble'] = aFumble
-        gameDF['totHit'] = aHit
-        gameDF['totfirst_down_rush'] = aFirstRush
-        gameDF['totfirst_down_pass'] = aFirstPass
-    else:
-        gameDF['posteam_type'] = 'home'
-        gameDF['totinterception'] = hInt
-        gameDF['totincomplete_pass'] = hIncomplete
-        gameDF['totcomplete_pass'] = hComplete
-        gameDF['totThirdDown_convert'] = h3rdConvert
-        gameDF['totThirdDown_fail'] = h3rdFail
-        gameDF['totFourthDown_convert'] = h4thConvert
-        gameDF['totFourthDown_fail'] = h4thFail
-        gameDF['totPass_TD'] = hPassTD
-        gameDF['totRush_TD'] = hRushTD
-        gameDF['totfumble'] = hFumble
-        gameDF['totHit'] = hHit
-        gameDF['totfirst_down_rush'] = hFirstRush
-        gameDF['totfirst_down_pass'] = hFirstPass
-    #Reset Stuff
-    gameDF['ydstogo'] = 10
-    gameDF['down'] = 1
-   
-    #Take off time
-    gameDF['game_seconds_remaining'] -= 5
-    gameDF['half_seconds_remaining'] -= 5
-    gameDF['quarter_seconds_remaining'] -= 5
-    if(gameDF['quarter_seconds_remaining'].iloc[0] <= 0):
-        gameDF['qtr'] += 1
-        gameDF['quarter_seconds_remaining'] = 900
-    if(gameDF['half_seconds_remaining'].iloc[0] <= 0):
-        gameDF['half_seconds_remaining'] = 1800
-        gameDF['game_seconds_remaining'] = 1800
-#Punt
-elif(gameDF['punt_attempt'].iloc[0] == 1):
-    gameDF['yardline_100'] = gameDF['yardline_100']+47
-    if(gameDF['yardline_100'] >= 100):
-        gameDF['yardline_100'] = 80
-    #Change teams (Punt)
-    #Score
-    temp = gameDF['posteam_score']
-    gameDF['posteam_score'] = gameDF['defteam_score']
-    gameDF['defteam_score'] = temp
-        
-    #Possession
-    temp = gameDF['posteam']
-    gameDF['posteam'] = gameDF['defteam']
-    gameDF['defteam'] = temp
-        
-    #Timeouts
-    temp = gameDF['posteam_timeouts_remaining']
-    gameDF['posteam_timeouts_remaining'] = gameDF['defteam_timeouts_remaining']
-    gameDF['defteam_timeouts_remaining'] = temp
-        
-    #Drive
-    gameDF['drive'] += 1
-        
-    #Posteam Type
-    if(gameDF['posteam_type'] == 'home'):
-        gameDF['posteam_type'] = 'away'
-        gameDF['totinterception'] = aInt
-        gameDF['totincomplete_pass'] = aIncomplete
-        gameDF['totcomplete_pass'] = aComplete
-        gameDF['totThirdDown_convert'] = a3rdConvert
-        gameDF['totThirdDown_fail'] = a3rdFail
-        gameDF['totFourthDown_convert'] = a4thConvert
-        gameDF['totFourthDown_fail'] = a4thFail
-        gameDF['totPass_TD'] = aPassTD
-        gameDF['totRush_TD'] = aRushTD
-        gameDF['totfumble'] = aFumble
-        gameDF['totHit'] = aHit
-        gameDF['totfirst_down_rush'] = aFirstRush
-        gameDF['totfirst_down_pass'] = aFirstPass
-    else:
-        gameDF['posteam_type'] = 'home'
-        gameDF['totinterception'] = hInt
-        gameDF['totincomplete_pass'] = hIncomplete
-        gameDF['totcomplete_pass'] = hComplete
-        gameDF['totThirdDown_convert'] = h3rdConvert
-        gameDF['totThirdDown_fail'] = h3rdFail
-        gameDF['totFourthDown_convert'] = h4thConvert
-        gameDF['totFourthDown_fail'] = h4thFail
-        gameDF['totPass_TD'] = hPassTD
-        gameDF['totRush_TD'] = hRushTD
-        gameDF['totfumble'] = hFumble
-        gameDF['totHit'] = hHit
-        gameDF['totfirst_down_rush'] = hFirstRush
-        gameDF['totfirst_down_pass'] = hFirstPass
-    #Reset Stuff
-    gameDF['ydstogo'] = 10
-    gameDF['down'] = 1
-   
-    #Take off time
-    gameDF['game_seconds_remaining'] -= 12
-    gameDF['half_seconds_remaining'] -= 12
-    gameDF['quarter_seconds_remaining'] -= 12
-    if(gameDF['quarter_seconds_remaining'].iloc[0] <= 0):
-        gameDF['qtr'] += 1
-        gameDF['quarter_seconds_remaining'] = 900
-    if(gameDF['half_seconds_remaining'].iloc[0] <= 0):
-        gameDF['half_seconds_remaining'] = 1800
-        gameDF['game_seconds_remaining'] = 1800
-#Pass
-elif(gameDF['pass_attempt'].iloc[0] == 1):
-    #Pred Stats
-    gameDF['passer_player_name'] = predPassPlayer(gameDF)
-    gameDF['pass_defense_1_player_name'] = predDefPlayer(gameDF, gameDF['passer_player_name'].iloc[0])
-    gameDF['pass_location'] = predPassLocation(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0])
-    gameDF['air_yards'] = predAirYards(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0])
-    gameDF['receiver_player_name'] = predAirYards(gameDF, gameDF['passer_player_name'].iloc[0])
-    gameDF['interception'] = predInterception(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0], gameDF['receiver_player_name'].iloc[0])
-    #Intercepted!
-    if(gameDF['interception'].iloc[0] == 1):
-        gameDF['yardline_100'] = 100 - gameDF['yardline_100']
-        #Change teams (Kickoff)
-        #Score
-        temp = gameDF['posteam_score']
-        gameDF['posteam_score'] = gameDF['defteam_score']
-        gameDF['defteam_score'] = temp
-        
-        #Possession
-        temp = gameDF['posteam']
-        gameDF['posteam'] = gameDF['defteam']
-        gameDF['defteam'] = temp
-        
-        #Timeouts
-        temp = gameDF['posteam_timeouts_remaining']
-        gameDF['posteam_timeouts_remaining'] = gameDF['defteam_timeouts_remaining']
-        gameDF['defteam_timeouts_remaining'] = temp
-        
-        #Drive
-        gameDF['drive'] += 1
+            gameDF['yardline_100'] = 100 - gameDF['yardline_100']
+        #Change Score, Position, Timeouts, Drive
+        gameDF = changeDefPos(gameDF)
+            
+        #Posteam Type
+        if(gameDF['posteam_type'].iloc[0] == 'home'):
+            gameDF = change2Away(gameDF, aInt, aIncomplete, aComplete, a3rdConvert, a3rdFail, a4thConvert, a4thFail, aPassTD, aRushTD, aFumble, aHit, aFirstPass, aFirstRush)
+        else:
+            gameDF = change2Home(gameDF, hInt, hIncomplete, hComplete, h3rdConvert, h3rdFail, h4thConvert, h4thFail, hPassTD, hRushTD, hFumble, hHit, hFirstPass, hFirstRush)
+        #Reset Stuff
+        gameDF['ydstogo'] = 10
+        gameDF['down'] = 1
+       
+        #Take off time
+        gameDF['game_seconds_remaining'] -= 5
+        gameDF['half_seconds_remaining'] -= 5
+        gameDF['quarter_seconds_remaining'] -= 5
+        if(gameDF['quarter_seconds_remaining'].iloc[0] <= 0):
+            gameDF['qtr'] += 1
+            gameDF['quarter_seconds_remaining'] = 900
+        if(gameDF['half_seconds_remaining'].iloc[0] <= 0):
+            gameDF['half_seconds_remaining'] = 1800
+            gameDF['game_seconds_remaining'] = 1800
+    #################################################################################################################################
+    #
+    #   PUNT
+    #
+    #################################################################################################################################
+    elif(gameDF['punt_attempt'].iloc[0] == 1):
+        print('PUNT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        gameDF['yardline_100'] = gameDF['yardline_100']+47
+        if(gameDF['yardline_100'].iloc[0] >= 100):
+            gameDF['yardline_100'] = 80
+            
+        #Change Score, Position, Timeouts, Drive
+        gameDF = changeDefPos(gameDF)
         
         #Posteam Type
-        if(gameDF['posteam_type'] == 'home'):
-            if(gameDF['down'].iloc[0] == 3):
-                h3rdFail += 1
-            elif(gameDF['down'].iloc[0] == 4):
-                h4thFail += 1
-            hInt += 1
-            gameDF['totinterception'] = aInt
-            gameDF['totincomplete_pass'] = aIncomplete
-            gameDF['totcomplete_pass'] = aComplete
-            gameDF['totThirdDown_convert'] = a3rdConvert
-            gameDF['totThirdDown_fail'] = a3rdFail
-            gameDF['totFourthDown_convert'] = a4thConvert
-            gameDF['totFourthDown_fail'] = a4thFail
-            gameDF['totPass_TD'] = aPassTD
-            gameDF['totRush_TD'] = aRushTD
-            gameDF['totfumble'] = aFumble
-            gameDF['totHit'] = aHit
-            gameDF['totfirst_down_rush'] = aFirstRush
-            gameDF['totfirst_down_pass'] = aFirstPass
-            gameDF['posteam_type'] = 'away'
+        if(gameDF['posteam_type'].iloc[0] == 'home'):
+            gameDF = change2Away(gameDF, aInt, aIncomplete, aComplete, a3rdConvert, a3rdFail, a4thConvert, a4thFail, aPassTD, aRushTD, aFumble, aHit, aFirstPass, aFirstRush)
         else:
-            if(gameDF['down'].iloc[0] == 3):
-                a3rdFail += 1
-            elif(gameDF['down'].iloc[0] == 4):
-                a4thFail += 1
-            aInt += 1
-            gameDF['totinterception'] = hInt
-            gameDF['totincomplete_pass'] = hIncomplete
-            gameDF['totcomplete_pass'] = hComplete
-            gameDF['totThirdDown_convert'] = h3rdConvert
-            gameDF['totThirdDown_fail'] = h3rdFail
-            gameDF['totFourthDown_convert'] = h4thConvert
-            gameDF['totFourthDown_fail'] = h4thFail
-            gameDF['totPass_TD'] = hPassTD
-            gameDF['totRush_TD'] = hRushTD
-            gameDF['totfumble'] = hFumble
-            gameDF['totHit'] = hHit
-            gameDF['totfirst_down_rush'] = hFirstRush
-            gameDF['totfirst_down_pass'] = hFirstPass
-            gameDF['posteam_type'] = 'home'
-        
+            gameDF = change2Home(gameDF, hInt, hIncomplete, hComplete, h3rdConvert, h3rdFail, h4thConvert, h4thFail, hPassTD, hRushTD, hFumble, hHit, hFirstPass, hFirstRush)
+        #Reset Stuff
+        gameDF['ydstogo'] = 10
         gameDF['down'] = 1
-        if(gameDF['yardline_100'] > 10):
-            gameDF['ydstogo'] = 10
-        else:
-            gameDF['ydstogo'] = gameDF['yardline_100'].iloc[0]
-    
-    #NOT Intercepted
-    else:
-        #Completed?
-        gameDF['complete_pass'] = predCompletion(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0], gameDF['receiver_player_name'].iloc[0])
-        if(gameDF['complete_pass'].iloc[0] == 1):
+       
+        #Take off time
+        gameDF['game_seconds_remaining'] -= 12
+        gameDF['half_seconds_remaining'] -= 12
+        gameDF['quarter_seconds_remaining'] -= 12
+        if(gameDF['quarter_seconds_remaining'].iloc[0] <= 0):
+            gameDF['qtr'] += 1
+            gameDF['quarter_seconds_remaining'] = 900
+        if(gameDF['half_seconds_remaining'].iloc[0] <= 0):
+            gameDF['half_seconds_remaining'] = 1800
+            gameDF['game_seconds_remaining'] = 1800
+    #################################################################################################################################
+    #
+    #   PASS
+    #
+    #################################################################################################################################
+    elif(gameDF['pass_attempt'].iloc[0] == 1):
+        print('PASS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        #Pred Stats
+        gameDF['passer_player_name'] = predPassPlayer(gameDF)
+        gameDF['pass_defense_1_player_name'] = predDefPlayer(gameDF, gameDF['passer_player_name'].iloc[0])
+        gameDF['pass_location'] = predPassLocation(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0])
+        gameDF['air_yards'] = predAirYards(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0])
+        gameDF['receiver_player_name'] = predAirYards(gameDF, gameDF['passer_player_name'].iloc[0])
+        gameDF['interception'] = predInterception(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0], gameDF['receiver_player_name'].iloc[0])
+        #Intercepted!
+        if(gameDF['interception'].iloc[0] == 1):
+            gameDF['yardline_100'] = 100 - gameDF['yardline_100']
+            #Change Score, Position, Timeouts, Drive
+            changeDefPos(gameDF)
+            
+            #Posteam Type
             if(gameDF['posteam_type'] == 'home'):
-                hComplete += 1
-                gameDF['totincomplete_pass'] = hComplete
+                if(gameDF['down'].iloc[0] == 3):
+                    h3rdFail += 1
+                elif(gameDF['down'].iloc[0] == 4):
+                    h4thFail += 1
+                change2Away(gameDF, aInt, aIncomplete, aComplete, a3rdConvert, a3rdFail, a4thConvert, a4thFail, aPassTD, aRushTD, aFumble, aHit, aFirstPass, aFirstRush)
             else:
-                aComplete += 1
-                gameDF['totincomplete_pass'] = aComplete
-            #Yards after Catch and Duration
-            gameDF['yards_after_catch'] = predYardsAfterCatch(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0], gameDF['receiver_player_name'].iloc[0])
-            gameDF['duration'] = predPassDuration(gameDF, gameDF['receiver_player_name'].iloc[0])
-            #Check First Down
-            gameDF['ydstogo'] = gameDF['ydstogo'] - (gameDF['airYards']+gameDF['yards_after_catch'])
-            if(gameDF['ydstogo'].iloc[0] <= 0):
-                gameDF['down'] = 1
-                if(gameDF['yardline_100'] > 10):
-                    gameDF['ydstogo'] = 10
+                if(gameDF['down'].iloc[0] == 3):
+                    a3rdFail += 1
+                elif(gameDF['down'].iloc[0] == 4):
+                    a4thFail += 1
+                change2Home(gameDF, hInt, hIncomplete, hComplete, h3rdConvert, h3rdFail, h4thConvert, h4thFail, hPassTD, hRushTD, hFumble, hHit, hFirstPass, hFirstRush)
+            
+            gameDF['down'] = 1
+            if(gameDF['yardline_100'] > 10):
+                gameDF['ydstogo'] = 10
+            else:
+                gameDF['ydstogo'] = gameDF['yardline_100'].iloc[0]
+        
+        #NOT Intercepted
+        else:
+            #Completed?
+            gameDF['complete_pass'] = predCompletion(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0], gameDF['receiver_player_name'].iloc[0])
+            if(gameDF['complete_pass'].iloc[0] == 1):
+                if(gameDF['posteam_type'] == 'home'):
+                    hComplete += 1
+                    gameDF['totincomplete_pass'] = hComplete
                 else:
-                    gameDF['ydstogo'] = gameDF['yardline_100'].iloc[0]
-                if(gameDF['posteam_type'].iloc[0] == 'home'):
-                    hFirstPass += 1
-                    gameDF['totfirst_down_pass'] = hFirstPass
-                    
-                    
-        else:
-            if(gameDF['posteam_type'] == 'home'):
-                hIncomplete += 1
-                gameDF['totincomplete_pass'] = hIncomplete
+                    aComplete += 1
+                    gameDF['totincomplete_pass'] = aComplete
+                #Yards after Catch and Duration
+                gameDF['yards_after_catch'] = predYardsAfterCatch(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0], gameDF['receiver_player_name'].iloc[0])
+                gameDF['duration'] = predPassDuration(gameDF, gameDF['receiver_player_name'].iloc[0])
+                #Check First Down
+                gameDF['ydstogo'] = gameDF['ydstogo'].iloc[0] - (gameDF['airYards'].iloc[0]+gameDF['yards_after_catch'].iloc[0])
+                if(gameDF['ydstogo'].iloc[0] <= 0):
+                    if(gameDF['posteam_type'].iloc[0] == 'home'):
+                        if(gameDF['down'].iloc[0] == 3):
+                            h3rdConvert += 1
+                            gameDF['totThirdDown_convert'] = h3rdConvert
+                        elif(gameDF['down'].iloc[0] == 4):
+                            h4thConvert += 1
+                            gameDF['totFourthDown_convert'] = h4thConvert
+                    else:
+                        if(gameDF['down'].iloc[0] == 3):
+                            a3rdFail += 1
+                            gameDF['totThirdDown_convert'] = a3rdConvert
+                        elif(gameDF['down'].iloc[0] == 4):
+                            a4thFail += 1
+                            gameDF['totFourthDown_convert'] = a4thConvert
+                    gameDF['down'] = 1
+                    if(gameDF['yardline_100'].iloc[0] > 10):
+                        gameDF['ydstogo'] = 10
+                    else:
+                        gameDF['ydstogo'] = gameDF['yardline_100'].iloc[0]
+                    if(gameDF['posteam_type'].iloc[0] == 'home'):
+                        hFirstPass += 1
+                        gameDF['totfirst_down_pass'] = hFirstPass
+                else:
+                    if(gameDF['posteam_type'] == 'home'):
+                        if(gameDF['down'].iloc[0] == 3):
+                            h3rdFail += 1
+                            gameDF['totThirdDown_fail'] = h3rdFail
+                        elif(gameDF['down'].iloc[0] == 4):
+                            h4thFail += 1
+                            gameDF['totFourthDown_fail'] = h4thFail
+                    else:
+                        if(gameDF['down'].iloc[0] == 3):
+                            a3rdFail += 1
+                            gameDF['totThirdDown_fail'] = a3rdFail
+                        elif(gameDF['down'].iloc[0] == 4):
+                            a4thFail += 1
+                            gameDF['totFourthDown_fail'] = a4thFail
+                    gameDF['down'] += 1
+                        
+                        
             else:
-                aIncomplete += 1
-                gameDF['totincomplete_pass'] = aIncomplete
+                if(gameDF['posteam_type'].iloc[0] == 'home'):
+                    hIncomplete += 1
+                    gameDF['totincomplete_pass'] = hIncomplete
+                    if(gameDF['down'].iloc[0] == 3):
+                        h3rdFail += 1
+                        gameDF['totThirdDown_fail'] = h3rdFail
+                    elif(gameDF['down'].iloc[0] == 4):
+                        h4thFail += 1
+                        gameDF['totFourthDown_fail'] = h4thFail
+                else:
+                    aIncomplete += 1
+                    gameDF['totincomplete_pass'] = aIncomplete
+                    if(gameDF['down'].iloc[0] == 3):
+                        a3rdFail += 1
+                        gameDF['totThirdDown_fail'] = a3rdFail
+                    elif(gameDF['down'].iloc[0] == 4):
+                        a4thFail += 1
+                        gameDF['totFourthDown_fail'] = a4thFail
+                gameDF['down'] += 1
+        
+        if(gameDF['yardline_100'].iloc[0] <= 0):
+            #Add points for TD
+            gameDF['posteam_score'] += 7
+            gameDF['score_differential'] = gameDF['defteam_score'].iloc[0] - gameDF['posteam_score'].iloc[0]
+            if(gameDF['posteam_type'] == 'home'):
+                gameDF['total_home_score'] += 7
+            else:
+                gameDF['total_away_score'] += 7
+            gameDF['yardline_100'] = 75
+            
+        #Change Score, Position, Timeouts, Drive
+        gameDF = changeDefPos(gameDF)
+            
+        #Posteam Type
+        if(gameDF['posteam_type'].iloc[0] == 'home'):
+            gameDF = change2Away(gameDF, aInt, aIncomplete, aComplete, a3rdConvert, a3rdFail, a4thConvert, a4thFail, aPassTD, aRushTD, aFumble, aHit, aFirstPass, aFirstRush)
+        else:
+            gameDF = change2Home(gameDF, hInt, hIncomplete, hComplete, h3rdConvert, h3rdFail, h4thConvert, h4thFail, hPassTD, hRushTD, hFumble, hHit, hFirstPass, hFirstRush)
+        #Reset Stuff
+        gameDF['ydstogo'] = 10
+        gameDF['down'] = 1
+        #Take off time
+        gameDF['game_seconds_remaining'] -= gameDF['duration'].iloc[0]
+        gameDF['half_seconds_remaining'] -= gameDF['duration'].iloc[0]
+        gameDF['quarter_seconds_remaining'] -= gameDF['duration'].iloc[0]
+        if(gameDF['quarter_seconds_remaining'].iloc[0] <= 0):
+            gameDF['qtr'] += 1
+            gameDF['quarter_seconds_remaining'] = 900
+        if(gameDF['half_seconds_remaining'].iloc[0] <= 0):
+            gameDF['half_seconds_remaining'] = 1800
+            gameDF['game_seconds_remaining'] = 1800
+    #################################################################################################################################
+    #
+    #   RUN
+    #
+    #################################################################################################################################
+    else:
+        print('RUN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        print(gameDF['pass_attempt'].iloc[0])
+        gameDF['rusher_player_name'] = predRushPlayer(gameDF)
+        gameDF['run_location'] = predRunLocation(gameDF, gameDF['rusher_player_name'].iloc[0])
+        gameDF['run_gap'] = predRunGap(gameDF, gameDF['rusher_player_name'].iloc[0])
+        gameDF['yards_gained'] = predRushYards(gameDF, gameDF['rusher_player_name'].iloc[0])
+        gameDF['duration'] = predRunDuration(gameDF, gameDF['rusher_player_name'].iloc[0])
+        #Check First Down
+        gameDF['ydstogo'] = gameDF['ydstogo'].iloc[0] - (gameDF['yards_gained'].iloc[0])
+        if(gameDF['ydstogo'].iloc[0] <= 0):
+            if(gameDF['posteam_type'].iloc[0] == 'home'):
+                if(gameDF['down'].iloc[0] == 3):
+                    h3rdConvert += 1
+                    gameDF['totThirdDown_convert'] = h3rdConvert
+                elif(gameDF['down'].iloc[0] == 4):
+                    h4thConvert += 1
+                    gameDF['totFourthDown_convert'] = h4thConvert
+            else:
+                if(gameDF['down'].iloc[0] == 3):
+                    a3rdFail += 1
+                    gameDF['totThirdDown_convert'] = a3rdConvert
+                elif(gameDF['down'].iloc[0] == 4):
+                    a4thFail += 1
+                    gameDF['totFourthDown_convert'] = a4thConvert
+            gameDF['down'] = 1
+            if(gameDF['yardline_100'].iloc[0] > 10):
+                gameDF['ydstogo'] = 10
+            if(gameDF['posteam_type'].iloc[0] == 'home'):
+                hFirstRush += 1
+                gameDF['totfirst_down_pass'] = hFirstRush
+            else:
+                aFirstRush += 1
+                gameDF['totfirst_down_pass'] = aFirstRush
+        else:
+            if(gameDF['posteam_type'].iloc[0] == 'home'):
+                if(gameDF['down'].iloc[0] == 3):
+                    h3rdFail += 1
+                    gameDF['totThirdDown_fail'] = h3rdFail
+                elif(gameDF['down'].iloc[0] == 4):
+                    h4thFail += 1
+                    gameDF['totFourthDown_fail'] = h4thFail
+            else:
+                if(gameDF['down'].iloc[0] == 3):
+                    a3rdFail += 1
+                    gameDF['totThirdDown_fail'] = a3rdFail
+                elif(gameDF['down'].iloc[0] == 4):
+                    a4thFail += 1
+                    gameDF['totFourthDown_fail'] = a4thFail
+            gameDF['down'] += 1
+            
+        gameDF['yardline_100'] = gameDF['yardline_100'].iloc[0]-gameDF['yards_gained'].iloc[0]
+        if(gameDF['yardline_100'].iloc[0] <= 0):
+            #Add points for TD
+            gameDF['posteam_score'] += 7
+            gameDF['score_differential'] = gameDF['defteam_score'].iloc[0] - gameDF['posteam_score'].iloc[0]
+            if(gameDF['posteam_type'].loc[0] == 'home'):
+                gameDF['total_home_score'] += 7
+            else:
+                gameDF['total_away_score'] += 7
+            gameDF['yardline_100'] = 75
+            #Change Score, Position, Timeouts, Drive
+            gameDF = changeDefPos(gameDF)
+            
+            #Posteam Type
+            if(gameDF['posteam_type'].iloc[0] == 'home'):
+                gameDF = change2Away(gameDF, aInt, aIncomplete, aComplete, a3rdConvert, a3rdFail, a4thConvert, a4thFail, aPassTD, aRushTD, aFumble, aHit, aFirstPass, aFirstRush)
+            else:
+                gameDF = change2Home(gameDF, hInt, hIncomplete, hComplete, h3rdConvert, h3rdFail, h4thConvert, h4thFail, hPassTD, hRushTD, hFumble, hHit, hFirstPass, hFirstRush)
+            #Reset Stuff
+            gameDF['ydstogo'] = 10
+            gameDF['down'] = 1
             
             
-
-else:
+        #Take off time
+        gameDF['game_seconds_remaining'] -= gameDF['duration'].iloc[0]
+        gameDF['half_seconds_remaining'] -= gameDF['duration'].iloc[0]
+        gameDF['quarter_seconds_remaining'] -= gameDF['duration'].iloc[0]
+        if(gameDF['quarter_seconds_remaining'].iloc[0] <= 0):
+            gameDF['qtr'] += 1
+            gameDF['quarter_seconds_remaining'] = 900
+        if(gameDF['half_seconds_remaining'].iloc[0] <= 0):
+            gameDF['half_seconds_remaining'] = 1800
+            gameDF['game_seconds_remaining'] = 1800
+    #################################################################################################################################
+    #
+    #   TURNOVER ON DOWNS
+    #
+    #################################################################################################################################
+    if(gameDF['down'].iloc[0] == 5):
+        gameDF['yardline_100'] = 100 - gameDF['yardline_100']
+        #Change Score, Position, Timeouts, Drive
+        changeDefPos(gameDF)
+            
+        #Posteam Type
+        if(gameDF['posteam_type'] == 'home'):
+            change2Away(gameDF, aInt, aIncomplete, aComplete, a3rdConvert, a3rdFail, a4thConvert, a4thFail, aPassTD, aRushTD, aFumble, aHit, aFirstPass, aFirstRush)
+        else:
+            change2Home(gameDF, hInt, hIncomplete, hComplete, h3rdConvert, h3rdFail, h4thConvert, h4thFail, hPassTD, hRushTD, hFumble, hHit, hFirstPass, hFirstRush)
+    print('POSTEAM')
+    print(gameDF['posteam'].iloc[0])
+    print('DOWN')
+    print(gameDF['down'].iloc[0])
+    print('DISTANCE')
+    print(gameDF['ydstogo'].iloc[0])
+    print('HOME SCORE')
+    print(gameDF['total_home_score'].iloc[0])
+    print('AWAY SCORE')
+    print(gameDF['total_away_score'].iloc[0])
+    print('QTR')
+    print(gameDF['qtr'].iloc[0])
+    print('TIME')
+    print(gameDF['quarter_seconds_remaining'].iloc[0])
+    print('YARDS GAINED')
+    print(gameDF['yards_gained'].iloc[0])
+    print('100 Yard Line')
+    print(gameDF['yardline_100'].iloc[0])
     
-        
-        
-a = predFGResult(gameDF)
 
+gameDF.to_csv('gameFinal.csv', index=False)
 
 
