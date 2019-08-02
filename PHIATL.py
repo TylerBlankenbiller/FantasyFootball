@@ -46,6 +46,9 @@ def build_model(train_dataset):
                 metrics=['mean_absolute_error', 'mean_squared_error'])
     return model
 
+home = 'PHI'
+away = 'ATL'    
+
 game = pd.read_csv("testLast4.csv", low_memory = False)
 game['HCoach'].replace(regex=True,inplace=True,to_replace=r' ',value=r'')
 game['ACoach'].replace(regex=True,inplace=True,to_replace=r' ',value=r'')
@@ -55,8 +58,8 @@ game['HOffense'].replace(regex=True,inplace=True,to_replace=r' ',value=r'')
 game['AOffense'].replace(regex=True,inplace=True,to_replace=r' ',value=r'')
 
 game = game.loc[(game.SType == 'Regular') & (game.Week == 1) & (game.game_id == 2018090600)]
-PO = game.loc[(game.posteam == 'PHI') ]
-AO = game.loc[(game.posteam == 'ATL') ]
+PO = game.loc[(game.posteam == home) ]
+AO = game.loc[(game.posteam == away) ]
 
 forcedFumble = PO['forced_fumble_player_1_player_name'].unique()
 fumbleRecovery = PO['fumble_recovery_1_player_name'].unique()
@@ -330,12 +333,16 @@ def predRunDuration(gameDF, rushPlayer):
             
     duration = Durations(duration)
     duration = duration.astype(float)
+    gameDFPunteam = gameDFPunteam.astype(float)
     for col in duration.columns:
-        if statistics.pstdev(duration[col])  <= 0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+        if statistics.pstdev(duration[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
             duration = duration.drop(columns=[col])
+    common_cols = [col for col in set(duration.columns).intersection(gameDFPunteam.columns)]
+    gameDFPunteam = gameDFPunteam[common_cols]
     col_list = (gameDFPunteam.append([gameDFPunteam,duration])).columns.tolist()
-    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     duration = duration.loc[:, col_list].fillna(0)
+    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+    duration.append(gameDFPunteam.iloc[0])
     gameDFPunteam.pop("duration")
             
     #print('test')
@@ -351,14 +358,24 @@ def predRunDuration(gameDF, rushPlayer):
     train_stats = train_dataset.describe()
     train_stats.pop("duration")
     train_stats = train_stats.transpose()
-    #print(train_stats)
+    print(train_stats)
 
     train_labels = train_dataset.pop('duration')
     test_labels = test_dataset.pop('duration')
 
 
-    normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
-    normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
+    normed_train_data = pd.DataFrame(columns=[])
+    normed_test_data = pd.DataFrame(columns=[])
+    
+    for col in train_dataset.columns:
+        normed_train_data[col] = (train_dataset[col] - train_dataset[col].mean()) / (train_dataset[col].max() - train_dataset[col].min())
+        
+    for col in test_dataset.columns:
+        normed_test_data[col] = (test_dataset[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
+        gameDFPunteam[col] = (gameDFPunteam[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
+    
+    #normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
+    #normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
 
     cols = len(train_dataset.columns)
 
@@ -374,12 +391,14 @@ def predRunDuration(gameDF, rushPlayer):
 
     loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
 
-    #print("Testing set Mean Abs Error: {:5.2f} Duration".format(mae))
+    print("Testing set Mean Abs Error: {:5.2f} Duration".format(mae))
 
 
     test_predictions = model.predict(normed_test_data).flatten()
 
+    print(test_predictions)
     temp = model.predict(gameDFPunteam).flatten()
+    print(temp[0])
     return(temp[0])
 
 
@@ -482,13 +501,16 @@ def predRushYards(gameDF, rushPlayer):
     yards_gained = rYardsGained(yards_gained)
     
     yards_gained = yards_gained.astype(float)
+    gameDFPunteam = gameDFPunteam.astype(float)
     for col in yards_gained.columns:
-        if statistics.pstdev(yards_gained[col])  <= 0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+        if statistics.pstdev(yards_gained[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
             yards_gained = yards_gained.drop(columns=[col])
-    
+    common_cols = [col for col in set(yards_gained.columns).intersection(gameDFPunteam.columns)]
+    gameDFPunteam = gameDFPunteam[common_cols]
     col_list = (gameDFPunteam.append([gameDFPunteam,yards_gained])).columns.tolist()
-    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     yards_gained = yards_gained.loc[:, col_list].fillna(0)
+    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+    yards_gained.append(gameDFPunteam.iloc[0])
 
     gameDFPunteam.pop("yards_gained")
     #print('test')
@@ -509,8 +531,18 @@ def predRushYards(gameDF, rushPlayer):
     test_labels = test_dataset.pop('yards_gained')
 
 
-    normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
-    normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
+    normed_train_data = pd.DataFrame(columns=[])
+    normed_test_data = pd.DataFrame(columns=[])
+    
+    for col in train_dataset.columns:
+        normed_train_data[col] = (train_dataset[col] - train_dataset[col].mean()) / (train_dataset[col].max() - train_dataset[col].min())
+        
+    for col in test_dataset.columns:
+        normed_test_data[col] = (test_dataset[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
+        gameDFPunteam[col] = (gameDFPunteam[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
+    
+    #normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
+    #normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
 
     cols = len(train_dataset.columns)
 
@@ -526,11 +558,11 @@ def predRushYards(gameDF, rushPlayer):
 
     loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
 
-    #print("Testing set Mean Abs Error: {:5.2f} B".format(mae))
+    print("Testing set Mean Abs Error: {:5.2f} B".format(mae))
 
 
     test_predictions = model.predict(normed_test_data).flatten()
-
+    print(test_predictions)
     temp = model.predict(gameDFPunteam).flatten()
     return(temp[0])
 
@@ -844,7 +876,10 @@ def rusherName(training_df):
     
 def predRushPlayer(gameDF):
     rusher_player_name = gg.copy()
-    rusher_player_name = rusher_player_name.loc[((rusher_player_name.rusher_player_name.isin(Pplayer)) & (rusher_player_name.HCoach.isin(Pplayer)))]
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
+        rusher_player_name = rusher_player_name.loc[((rusher_player_name.rusher_player_name.isin(Pplayer)) & (rusher_player_name.HCoach.isin(Pplayer)))]
+    else:
+        rusher_player_name = rusher_player_name.loc[((rusher_player_name.rusher_player_name.isin(Aplayer)) & (rusher_player_name.HCoach.isin(Aplayer)))]
     #temp = int.loc[(int.interception == 1)]
     #int = int.loc[(int.interception == 0)]
     #int= int.sample(n=len(temp), random_state=1)
@@ -972,11 +1007,13 @@ def predPassDuration(gameDF, receiverPlayer):
     passDuration = PDurations(passDuration)
     passDuration = passDuration.astype(float)
     for col in passDuration.columns:
-        if statistics.pstdev(passDuration[col])  <= 0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+        if statistics.pstdev(passDuration[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
             passDuration = passDuration.drop(columns=[col])
+    common_cols = [col for col in set(passDuration.columns).intersection(gameDFPunteam.columns)]
+    gameDFPunteam = gameDFPunteam[common_cols]
     col_list = (gameDFPunteam.append([gameDFPunteam,passDuration])).columns.tolist()
-    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     passDuration = passDuration.loc[:, col_list].fillna(0)
+    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     gameDFPunteam.pop('duration')
             
     #print('test')
@@ -998,8 +1035,14 @@ def predPassDuration(gameDF, receiverPlayer):
     test_labels = test_dataset.pop('duration')
 
 
-    normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
-    normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
+    for col in train_dataset.columns:
+        normed_train_data[col] = (train_dataset[col] - train_dataset[col].mean()) / (train_dataset[col].max() - train_dataset[col].min())
+        
+    for col in test_dataset.columns:
+        normed_test_data[col] = (test_dataset[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
+    
+    #normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
+    #normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
 
     cols = len(train_dataset.columns)
 
@@ -1122,11 +1165,13 @@ def predYardsAfterCatch(gameDF, passPlayer, defPlayer, receiverPlayer):
     yards_after_catch = afterCatch(yards_after_catch)
     yards_after_catch = yards_after_catch.astype(float)
     for col in yards_after_catch.columns:
-        if statistics.pstdev(yards_after_catch[col])  <= 0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+        if statistics.pstdev(yards_after_catch[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
             yards_after_catch = yards_after_catch.drop(columns=[col])
+    common_cols = [col for col in set(yards_after_catch.columns).intersection(gameDFPunteam.columns)]
+    gameDFPunteam = gameDFPunteam[common_cols]
     col_list = (gameDFPunteam.append([gameDFPunteam,yards_after_catch])).columns.tolist()
-    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     yards_after_catch = yards_after_catch.loc[:, col_list].fillna(0)
+    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     gameDFPunteam.pop("yards_after_catch")
             
     #print('test')
@@ -1148,8 +1193,14 @@ def predYardsAfterCatch(gameDF, passPlayer, defPlayer, receiverPlayer):
     test_labels = test_dataset.pop('yards_after_catch')
 
 
-    normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
-    normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
+    for col in train_dataset.columns:
+        normed_train_data[col] = (train_dataset[col] - train_dataset[col].mean()) / (train_dataset[col].max() - train_dataset[col].min())
+        
+    for col in test_dataset.columns:
+        normed_test_data[col] = (test_dataset[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
+    
+    #normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
+    #normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
 
     cols = len(train_dataset.columns)
 
@@ -1498,7 +1549,10 @@ def receiverName(training_df):
     
 def predReceiver(gameDF, passPlayer):
     receiver_player_name = gg.copy()
-    receiver_player_name = receiver_player_name.loc[(receiver_player_name.receiver_player_name.isin(Pplayer)) & (receiver_player_name.passer_player_name == passPlayer) & (receiver_player_name.pass_attempt == 1)]
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
+        receiver_player_name = receiver_player_name.loc[(receiver_player_name.receiver_player_name.isin(Pplayer)) & (receiver_player_name.passer_player_name == passPlayer) & (receiver_player_name.pass_attempt == 1)]
+    else:    
+        receiver_player_name = receiver_player_name.loc[(receiver_player_name.receiver_player_name.isin(Aplayer)) & (receiver_player_name.passer_player_name == passPlayer) & (receiver_player_name.pass_attempt == 1)]
     gameDFPunteam = receiverName(gameDF)
             
     receiver_player_name = receiverName(receiver_player_name)
@@ -1615,11 +1669,13 @@ def predAirYards(gameDF, passPlayer, defPlayer):
     aYards = airYards(aYards)
     aYards = aYards.astype(float)
     for col in aYards.columns:
-        if statistics.pstdev(aYards[col])  <= 0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+        if statistics.pstdev(aYards[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
             aYards = aYards.drop(columns=[col])
+    common_cols = [col for col in set(aYards.columns).intersection(gameDFPunteam.columns)]
+    gameDFPunteam = gameDFPunteam[common_cols]
     col_list = (gameDFPunteam.append([gameDFPunteam,aYards])).columns.tolist()
-    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     aYards = aYards.loc[:, col_list].fillna(0)
+    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     gameDFPunteam.pop("air_yards")
             
     print('test')
@@ -1641,8 +1697,14 @@ def predAirYards(gameDF, passPlayer, defPlayer):
     test_labels = test_dataset.pop('air_yards')
 
 
-    normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
-    normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
+    for col in train_dataset.columns:
+        normed_train_data[col] = (train_dataset[col] - train_dataset[col].mean()) / (train_dataset[col].max() - train_dataset[col].min())
+        
+    for col in test_dataset.columns:
+        normed_test_data[col] = (test_dataset[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
+    
+    #normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
+    #normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
 
     cols = len(train_dataset.columns)
 
@@ -1753,11 +1815,13 @@ def predPassLocation(gameDF, passPlayer, defPlayer):
     gameDFPunteam = passLocation(gameDF)
             
     pLocation = passLocation(pLocation)
+    pLocation.to_scv('test.csv', index = False)
+    gameDFPunteam.to_scv('test2.csv', index = False)
     col_list = (gameDFPunteam.append([gameDFPunteam,pLocation])).columns.tolist()
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     pLocation = pLocation.loc[:, col_list].fillna(0)
-    X = pLocation.drop('pass_location', axis=1)
     y = pLocation['pass_location']
+    X = pLocation.drop('pass_location', axis=1)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
@@ -1892,7 +1956,7 @@ def predDefPlayer(gameDF, passPlayer):
 ##########################################################################################################################################
 #   Pass Player
 ##########################################################################################################################################
-def passering(training_df):
+def passeringp(training_df):
     '''
         Change stats that are strings into dummy columns
         These will be stats that are given and don't happen during the play.
@@ -1966,15 +2030,18 @@ def passering(training_df):
     
 def predPassPlayer(gameDF):
     passer = gg.copy()
-    passer = passer.loc[((passer.passer_player_name.isin(Pplayer)) & (passer.HCoach.isin(Pplayer)))]
-    gameDFPunteam = passering(gameDF)
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
+        passer = passer.loc[((passer.passer_player_name.isin(Pplayer)) & (passer.HCoach.isin(Pplayer)))]
+    else:
+        passer = passer.loc[((passer.passer_player_name.isin(Aplayer)) & (passer.HCoach.isin(Aplayer)))]
+    gameDFPunteam = passeringp(gameDF)
             
-    passer = passering(passer)
+    passer = passeringp(passer)
     col_list = (gameDFPunteam.append([gameDFPunteam,passer])).columns.tolist()
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     passer = passer.loc[:, col_list].fillna(0)
-    X = passer.drop('passer_player_name', axis=1)
     y = passer['passer_player_name']
+    X = passer.drop('passer_player_name', axis=1)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
@@ -2073,9 +2140,23 @@ def passering(training_df):
     
 def predPassRun(gameDF):
     passer = gg.copy()
-    passer = passer.loc[((passer.passer_player_name.isin(Pplayer) | (passer.rusher_player_name.isin(Pplayer))) & (passer.HCoach.isin(Pplayer)))]
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
+        passer = passer.loc[((passer.passer_player_name.isin(Pplayer) | (passer.rusher_player_name.isin(Pplayer))) & (passer.HCoach.isin(Pplayer))) & (passer.qtr == gameDF['qtr'].iloc[0])]
+    else:
+        passer = passer.loc[((passer.passer_player_name.isin(Aplayer) | (passer.rusher_player_name.isin(Aplayer))) & (passer.HCoach.isin(Aplayer))) & (passer.qtr == gameDF['qtr'].iloc[0])]
     gameDFPunteam = passering(gameDF)
             
+    if(len(passer.loc[passer['pass_attempt'] == 1]) > len(passer.loc[passer['rush_attempt'] == 1])):
+        temp = passer.loc[passer['rush_attempt'] == 1]
+        temp2 = passer.loc[passer['pass_attempt'] == 1]
+        temp2 = temp2.sample(n = len(passer.loc[passer['rush_attempt'] == 1])) 
+        passer = pd.concat([temp, temp2])
+    else:
+        temp = passer.loc[passer['pass_attempt'] == 1]
+        temp2 = passer.loc[passer['rush_attempt'] == 1]
+        temp2 = temp2.sample(n = len(passer.loc[passer['pass_attempt'] == 1])) 
+        passer = pd.concat([temp, temp2])
+    
     passer = passering(passer)
     col_list = (gameDFPunteam.append([gameDFPunteam,passer])).columns.tolist()
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
@@ -2184,7 +2265,10 @@ def punt(training_df):
     
 def predPunt(gameDF):
     punt_attempt = gg.copy()
-    punt_attempt = punt_attempt.loc[(punt_attempt.punter_player_name.isin(Pplayer))]
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
+        punt_attempt = punt_attempt.loc[(punt_attempt.punter_player_name.isin(Pplayer))]
+    else:
+        punt_attempt = punt_attempt.loc[(punt_attempt.punter_player_name.isin(Aplayer))]
     nField = gg.copy()
     print(nField.HCoach.unique())
     print(Pplayer)
@@ -2428,7 +2512,10 @@ def fieldGoal(training_df):
 
 def predFieldGoal(gameDF):
     field_goal_attempt = gg.copy()
-    field = field_goal_attempt.loc[(field_goal_attempt.kicker_player_name.isin(Pplayer))]
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
+        field = field_goal_attempt.loc[(field_goal_attempt.kicker_player_name.isin(Pplayer))]
+    else:
+        field = field_goal_attempt.loc[(field_goal_attempt.kicker_player_name.isin(Aplayer))]
     nField = gg.copy()
     nField = nField.loc[(nField.HCoach.isin(Pplayer) & (nField.field_goal_attempt == 0))]
     field_goal_attempt = pd.concat([field_goal_attempt, nField])
@@ -2550,7 +2637,10 @@ def kicker(training_df):
     
 def predFGResult(gameDF):
     field_goal_attempt = gg.copy()
-    field = field_goal_attempt.loc[(field_goal_attempt.kicker_player_name.isin(Pplayer))]
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
+        field = field_goal_attempt.loc[(field_goal_attempt.kicker_player_name.isin(Pplayer))]
+    else:
+        field = field_goal_attempt.loc[(field_goal_attempt.kicker_player_name.isin(Pplayer))]
     nField = gg.copy()
     nField = nField.loc[(nField.HCoach.isin(Pplayer) & (nField.field_goal_attempt == 0))]
     field_goal_attempt = pd.concat([field_goal_attempt, nField])
@@ -2689,12 +2779,14 @@ while(gameDF['qtr'].iloc[0] < 5):
     gameDF['field_goal_attempt'] = predFieldGoal(gameDF)
     gameDF['punt_attempt'] = predPunt(gameDF)
     gameDF['pass_attempt'] = predPassRun(gameDF)
+    print("PAss Attmpt")
+    print(gameDF['pass_attempt'].iloc[0])
     #################################################################################################################################
     #
     #   FIELD GOAL
     #
     #################################################################################################################################
-    if(gameDF['field_goal_attempt'].iloc[0] == 1):
+    if(int(gameDF['field_goal_attempt'].iloc[0]) == 1):
         print('FIELD GOAL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         #Check if Field Goal is Good
         gameDF['kick_distance'] = gameDF['yardline_100'] + 18
@@ -2737,7 +2829,7 @@ while(gameDF['qtr'].iloc[0] < 5):
     #   PUNT
     #
     #################################################################################################################################
-    elif(gameDF['punt_attempt'].iloc[0] == 1):
+    elif(int(gameDF['punt_attempt'].iloc[0]) == 1):
         print('PUNT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         gameDF['yardline_100'] = gameDF['yardline_100']+47
         if(gameDF['yardline_100'].iloc[0] >= 100):
@@ -2770,7 +2862,7 @@ while(gameDF['qtr'].iloc[0] < 5):
     #   PASS
     #
     #################################################################################################################################
-    elif(gameDF['pass_attempt'].iloc[0] == 1):
+    elif(int(gameDF['pass_attempt'].iloc[0]) == 1):
         print('PASS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         #Pred Stats
         gameDF['passer_player_name'] = predPassPlayer(gameDF)
@@ -2905,9 +2997,9 @@ while(gameDF['qtr'].iloc[0] < 5):
         gameDF['ydstogo'] = 10
         gameDF['down'] = 1
         #Take off time
-        gameDF['game_seconds_remaining'] -= gameDF['duration'].iloc[0]
-        gameDF['half_seconds_remaining'] -= gameDF['duration'].iloc[0]
-        gameDF['quarter_seconds_remaining'] -= gameDF['duration'].iloc[0]
+        gameDF['game_seconds_remaining'] += gameDF['duration'].iloc[0]
+        gameDF['half_seconds_remaining'] += gameDF['duration'].iloc[0]
+        gameDF['quarter_seconds_remaining'] += gameDF['duration'].iloc[0]
         if(gameDF['quarter_seconds_remaining'].iloc[0] <= 0):
             gameDF['qtr'] += 1
             gameDF['quarter_seconds_remaining'] = 900
@@ -2994,9 +3086,9 @@ while(gameDF['qtr'].iloc[0] < 5):
             
             
         #Take off time
-        gameDF['game_seconds_remaining'] -= gameDF['duration'].iloc[0]
-        gameDF['half_seconds_remaining'] -= gameDF['duration'].iloc[0]
-        gameDF['quarter_seconds_remaining'] -= gameDF['duration'].iloc[0]
+        gameDF['game_seconds_remaining'] += gameDF['duration'].iloc[0]
+        gameDF['half_seconds_remaining'] += gameDF['duration'].iloc[0]
+        gameDF['quarter_seconds_remaining'] += gameDF['duration'].iloc[0]
         if(gameDF['quarter_seconds_remaining'].iloc[0] <= 0):
             gameDF['qtr'] += 1
             gameDF['quarter_seconds_remaining'] = 900
@@ -3036,7 +3128,9 @@ while(gameDF['qtr'].iloc[0] < 5):
     print(gameDF['yards_gained'].iloc[0])
     print('100 Yard Line')
     print(gameDF['yardline_100'].iloc[0])
-    
+    print('Duration')
+    print(gameDF['duration'].iloc[0])
+    gameDF.to_csv('gameFinal.csv', index=False)
 
 gameDF.to_csv('gameFinal.csv', index=False)
 
