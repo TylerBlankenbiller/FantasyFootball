@@ -1419,7 +1419,7 @@ def interception(training_df):
     training_df = training_df.drop(columns=['passer_player_name'])
     training_df = pd.concat([training_df, pd.get_dummies('Receiver' + training_df['receiver_player_name'])], axis=1)
     training_df = training_df.drop(columns=['receiver_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies('Defense' + training_df['pass_defense_1_player_name'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies('Defense' + training_df['pass_defense_1_player_name'])], axis=1)
     training_df = training_df.drop(columns=['pass_defense_1_player_name'])
     training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
                 'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
