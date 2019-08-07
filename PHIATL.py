@@ -219,7 +219,7 @@ gameDF = pd.DataFrame({'SType':['Regular'], 'Weather':['Rain'],	'Week':1, 'Year'
         'tackle_for_loss_1_player_name':'a', 'third_down_converted':0, 'third_down_failed':0, 'timeout':0,
         'timeout_team':'a', 'total_away_score':0, 'total_home_score':0, 'touchback':0, 
         'two_point_attempt':0, 'two_point_conv_result':0, 'yardline_100':75, 'yards_after_catch':0,
-        'yards_gained':0, 'ydstogo':10, 'HCoach':'Doug Pederson', 'HDefense':'Jim Schwartz',
+        'air_yards':0, 'ydstogo':10, 'HCoach':'Doug Pederson', 'HDefense':'Jim Schwartz',
         'HOffense':'Mike Groh', 'ACoach':'Dan Quinn', 'ADefense':'Marquand Manuel', 
         'AOffense':'Steve Sarkisian', 'totHit':0, 'totfirst_down_rush':0, 'totfirst_down_pass':0,
         'totincomplete_pass':0, 'totcomplete_pass':0, 'totinterception':0, 'totThirdDown_convert':0,
@@ -396,14 +396,14 @@ def predRunDuration(gameDF, rushPlayer):
 
     test_predictions = model.predict(normed_test_data).flatten()
 
-    print(test_predictions)
+    #print(test_predictions)
     temp = model.predict(gameDFPunteam).flatten()
     print(temp[0])
     return(temp[0])
 
 
 ##########################################################################################################################################
-#   Run yards_gained
+#   Run aYards
 ##########################################################################################################################################
 def rYardsGained(training_df):
     '''
@@ -485,11 +485,11 @@ def rYardsGained(training_df):
     return training_df
     
 def predRushYards(gameDF, rushPlayer):
-    yards_gained = gg.copy()
+    aYards = gg.copy()
     if(gameDF['posteam_type'].iloc[0] == 'home'):
-        yards_gained = yards_gained.loc[((yards_gained.rusher_player_name == rushPlayer) & (yards_gained.HOffense.isin(Pplayer))) | ((yards_gained.ADefense.isin(Pplayer)) & (yards_gained.Year == 2018) & (yards_gained.rush_attempt == 1))]
+        aYards = aYards.loc[((aYards.rusher_player_name == rushPlayer) & (aYards.HOffense.isin(Pplayer))) | ((aYards.ADefense.isin(Pplayer)) & (aYards.Year == 2018) & (aYards.rush_attempt == 1))]
     else:
-        yards_gained = yards_gained.loc[((yards_gained.rusher_player_name == rushPlayer) & (yards_gained.AOffense.isin(Pplayer))) | ((yards_gained.HDefense.isin(Pplayer)) & (yards_gained.Year == 2018) & (yards_gained.rush_attempt == 1))]
+        aYards = aYards.loc[((aYards.rusher_player_name == rushPlayer) & (aYards.AOffense.isin(Pplayer))) | ((aYards.HDefense.isin(Pplayer)) & (aYards.Year == 2018) & (aYards.rush_attempt == 1))]
     #temp = int.loc[(int.interception == 1)]
     #int = int.loc[(int.interception == 0)]
     #int= int.sample(n=len(temp), random_state=1)
@@ -498,26 +498,26 @@ def predRushYards(gameDF, rushPlayer):
     #int = pd.concat([int, temp])
     gameDFPunteam = rYardsGained(gameDF)
             
-    yards_gained = rYardsGained(yards_gained)
+    aYards = rYardsGained(aYards)
     
-    yards_gained = yards_gained.astype(float)
+    aYards = aYards.astype(float)
     gameDFPunteam = gameDFPunteam.astype(float)
-    for col in yards_gained.columns:
-        if statistics.pstdev(yards_gained[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
-            yards_gained = yards_gained.drop(columns=[col])
-    common_cols = [col for col in set(yards_gained.columns).intersection(gameDFPunteam.columns)]
+    for col in aYards.columns:
+        if statistics.pstdev(aYards[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+            aYards = aYards.drop(columns=[col])
+    common_cols = [col for col in set(aYards.columns).intersection(gameDFPunteam.columns)]
     gameDFPunteam = gameDFPunteam[common_cols]
-    col_list = (gameDFPunteam.append([gameDFPunteam,yards_gained])).columns.tolist()
-    yards_gained = yards_gained.loc[:, col_list].fillna(0)
+    col_list = (gameDFPunteam.append([gameDFPunteam,aYards])).columns.tolist()
+    aYards = aYards.loc[:, col_list].fillna(0)
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
-    yards_gained.append(gameDFPunteam.iloc[0])
+    aYards.append(gameDFPunteam.iloc[0])
 
     gameDFPunteam.pop("yards_gained")
     #print('test')
-    #print(yards_gained['yards_gained'].mean())
+    #print(aYards['aYards'].mean())
 
 
-    dataset = yards_gained.copy()
+    dataset = aYards.copy()
     dataset.tail()
 
     train_dataset = dataset.sample(frac=0.75,random_state=0)
@@ -562,7 +562,7 @@ def predRushYards(gameDF, rushPlayer):
 
 
     test_predictions = model.predict(normed_test_data).flatten()
-    print(test_predictions)
+    #print(test_predictions)
     temp = model.predict(gameDFPunteam).flatten()
     return(temp[0])
 
@@ -643,7 +643,7 @@ def runGap(training_df):
                 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predRunGap(gameDF, rushPlayer):
@@ -758,7 +758,7 @@ def runLocation(training_df):
                 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predRunLocation(gameDF, rushPlayer):
@@ -871,7 +871,7 @@ def rusherName(training_df):
                 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predRushPlayer(gameDF):
@@ -971,11 +971,11 @@ def PDurations(training_df):
     training_df = training_df.drop(columns=['extra_point_attempt'])
     training_df = training_df.drop(columns=['extra_point_result'])
     training_df = training_df.drop(columns=['field_goal_result'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['passer_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Pass' + training_df['passer_player_name'])], axis=1)
     training_df = training_df.drop(columns=['passer_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['receiver_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Rec' + training_df['receiver_player_name'])], axis=1)
     training_df = training_df.drop(columns=['receiver_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['pass_defense_1_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Defense' + training_df['pass_defense_1_player_name'])], axis=1)
     training_df = training_df.drop(columns=['pass_defense_1_player_name'])
     training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
                 'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
@@ -992,7 +992,7 @@ def PDurations(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_gained', 'short', 'med', 'long', 'longest', 'attempt'])
+                'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predPassDuration(gameDF, receiverPlayer):
@@ -1014,6 +1014,7 @@ def predPassDuration(gameDF, receiverPlayer):
     col_list = (gameDFPunteam.append([gameDFPunteam,passDuration])).columns.tolist()
     passDuration = passDuration.loc[:, col_list].fillna(0)
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+    passDuration.append(gameDFPunteam.iloc[0])
     gameDFPunteam.pop('duration')
             
     #print('test')
@@ -1034,12 +1035,15 @@ def predPassDuration(gameDF, receiverPlayer):
     train_labels = train_dataset.pop('duration')
     test_labels = test_dataset.pop('duration')
 
+    normed_train_data = pd.DataFrame(columns=[])
+    normed_test_data = pd.DataFrame(columns=[])
 
     for col in train_dataset.columns:
         normed_train_data[col] = (train_dataset[col] - train_dataset[col].mean()) / (train_dataset[col].max() - train_dataset[col].min())
         
     for col in test_dataset.columns:
         normed_test_data[col] = (test_dataset[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
+        gameDFPunteam[col] = (gameDFPunteam[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
     
     #normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
     #normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
@@ -1064,7 +1068,9 @@ def predPassDuration(gameDF, receiverPlayer):
     test_predictions = model.predict(normed_test_data).flatten()
 
     temp = model.predict(gameDFPunteam).flatten()
-    #return(temp[0])
+    print("Duration")
+    print(temp[0])
+    return(temp[0])
 
 
 ##########################################################################################################################################
@@ -1125,11 +1131,11 @@ def afterCatch(training_df):
     training_df = training_df.drop(columns=['extra_point_attempt'])
     training_df = training_df.drop(columns=['extra_point_result'])
     training_df = training_df.drop(columns=['field_goal_result'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['passer_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Pass' + training_df['passer_player_name'])], axis=1)
     training_df = training_df.drop(columns=['passer_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['receiver_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Rec' + training_df['receiver_player_name'])], axis=1)
     training_df = training_df.drop(columns=['receiver_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['pass_defense_1_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Defense' + training_df['pass_defense_1_player_name'])], axis=1)
     training_df = training_df.drop(columns=['pass_defense_1_player_name'])
     training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
                 'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
@@ -1146,7 +1152,7 @@ def afterCatch(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predYardsAfterCatch(gameDF, passPlayer, defPlayer, receiverPlayer):
@@ -1172,7 +1178,9 @@ def predYardsAfterCatch(gameDF, passPlayer, defPlayer, receiverPlayer):
     col_list = (gameDFPunteam.append([gameDFPunteam,yards_after_catch])).columns.tolist()
     yards_after_catch = yards_after_catch.loc[:, col_list].fillna(0)
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+    yards_after_catch.append(gameDFPunteam.iloc[0])
     gameDFPunteam.pop("yards_after_catch")
+    
             
     #print('test')
     #print(yards_after_catch['yards_after_catch'].mean())
@@ -1193,11 +1201,15 @@ def predYardsAfterCatch(gameDF, passPlayer, defPlayer, receiverPlayer):
     test_labels = test_dataset.pop('yards_after_catch')
 
 
+    normed_train_data = pd.DataFrame(columns=[])
+    normed_test_data = pd.DataFrame(columns=[])
+    
     for col in train_dataset.columns:
         normed_train_data[col] = (train_dataset[col] - train_dataset[col].mean()) / (train_dataset[col].max() - train_dataset[col].min())
         
     for col in test_dataset.columns:
         normed_test_data[col] = (test_dataset[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
+        gameDFPunteam[col] = (gameDFPunteam[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
     
     #normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
     #normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
@@ -1282,11 +1294,11 @@ def completion(training_df):
     training_df = training_df.drop(columns=['extra_point_attempt'])
     training_df = training_df.drop(columns=['extra_point_result'])
     training_df = training_df.drop(columns=['field_goal_result'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['passer_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Pass' + training_df['passer_player_name'])], axis=1)
     training_df = training_df.drop(columns=['passer_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['receiver_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Rec' + training_df['receiver_player_name'])], axis=1)
     training_df = training_df.drop(columns=['receiver_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['pass_defense_1_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Def' + training_df['pass_defense_1_player_name'])], axis=1)
     training_df = training_df.drop(columns=['pass_defense_1_player_name'])
     training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
                 'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
@@ -1303,7 +1315,7 @@ def completion(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predCompletion(gameDF, passPlayer, defPlayer, receiverPlayer):
@@ -1342,8 +1354,7 @@ def predCompletion(gameDF, passPlayer, defPlayer, receiverPlayer):
     #print(y_predict)
     #print(len(complete.loc[((complete.complete_pass == 1))]))
     #print(len(complete.loc[((complete.complete_pass == 0))]))
-    gameDF['complete_pass'] = y_predict
-    return(gameDF['complete_pass'])
+    return(y_predict[0])
 
 ##########################################################################################################################################
 #   interception
@@ -1404,11 +1415,11 @@ def interception(training_df):
     training_df = training_df.drop(columns=['extra_point_attempt'])
     training_df = training_df.drop(columns=['extra_point_result'])
     training_df = training_df.drop(columns=['field_goal_result'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['passer_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Passer' + training_df['passer_player_name'])], axis=1)
     training_df = training_df.drop(columns=['passer_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['receiver_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Receiver' + training_df['receiver_player_name'])], axis=1)
     training_df = training_df.drop(columns=['receiver_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['pass_defense_1_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Defense' + training_df['pass_defense_1_player_name'])], axis=1)
     training_df = training_df.drop(columns=['pass_defense_1_player_name'])
     training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
                 'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
@@ -1425,7 +1436,7 @@ def interception(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predInterception(gameDF, passPlayer, defPlayer, receiverPlayer):
@@ -1544,7 +1555,7 @@ def receiverName(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predReceiver(gameDF, passPlayer):
@@ -1569,7 +1580,7 @@ def predReceiver(gameDF, passPlayer):
     random_forest.fit(X_train, y_train)
 
     y_predict = random_forest.predict(X_test)
-    print(y_predict)
+    #print(y_predict)
     print("Accuracy receiver_player_name Attempt: ")
     ab = accuracy_score(y_test, y_predict)
 
@@ -1640,9 +1651,9 @@ def airYards(training_df):
     training_df = training_df.drop(columns=['extra_point_attempt'])
     training_df = training_df.drop(columns=['extra_point_result'])
     training_df = training_df.drop(columns=['field_goal_result'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['passer_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Pass' + training_df['passer_player_name'])], axis=1)
     training_df = training_df.drop(columns=['passer_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['pass_defense_1_player_name'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies('Defense' + training_df['pass_defense_1_player_name'])], axis=1)
     training_df = training_df.drop(columns=['pass_defense_1_player_name'])
     training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
                 'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
@@ -1659,7 +1670,7 @@ def airYards(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predAirYards(gameDF, passPlayer, defPlayer):
@@ -1668,6 +1679,7 @@ def predAirYards(gameDF, passPlayer, defPlayer):
     gameDFPunteam = airYards(gameDF)
     aYards = airYards(aYards)
     aYards = aYards.astype(float)
+    gameDFPunteam = gameDFPunteam.astype(float)
     for col in aYards.columns:
         if statistics.pstdev(aYards[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
             aYards = aYards.drop(columns=[col])
@@ -1676,10 +1688,11 @@ def predAirYards(gameDF, passPlayer, defPlayer):
     col_list = (gameDFPunteam.append([gameDFPunteam,aYards])).columns.tolist()
     aYards = aYards.loc[:, col_list].fillna(0)
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+    aYards.append(gameDFPunteam.iloc[0])
+
     gameDFPunteam.pop("air_yards")
-            
-    print('test')
-    print(aYards['air_yards'].mean())
+    #print('test')
+    #print(aYards['aYards'].mean())
 
 
     dataset = aYards.copy()
@@ -1691,17 +1704,20 @@ def predAirYards(gameDF, passPlayer, defPlayer):
     train_stats = train_dataset.describe()
     train_stats.pop("air_yards")
     train_stats = train_stats.transpose()
-    print(train_stats)
 
     train_labels = train_dataset.pop('air_yards')
     test_labels = test_dataset.pop('air_yards')
 
 
+    normed_train_data = pd.DataFrame(columns=[])
+    normed_test_data = pd.DataFrame(columns=[])
+    
     for col in train_dataset.columns:
         normed_train_data[col] = (train_dataset[col] - train_dataset[col].mean()) / (train_dataset[col].max() - train_dataset[col].min())
         
     for col in test_dataset.columns:
         normed_test_data[col] = (test_dataset[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
+        gameDFPunteam[col] = (gameDFPunteam[col] - test_dataset[col].mean()) / (test_dataset[col].max() - test_dataset[col].min())
     
     #normed_train_data = (train_dataset - train_dataset.mean()) / (train_dataset.max() - train_dataset.min())#train_dataset#norm(train_dataset, train_stats)
     #normed_test_data = (test_dataset - test_dataset.mean()) / (test_dataset.max() - test_dataset.min())#test_dataset#norm(test_dataset, train_stats)
@@ -1724,8 +1740,9 @@ def predAirYards(gameDF, passPlayer, defPlayer):
 
 
     test_predictions = model.predict(normed_test_data).flatten()
-    result = model.predict(gameDFPunteam).flatten()
-    return(result[0])
+    #print(test_predictions)
+    temp = model.predict(gameDFPunteam).flatten()
+    return(temp[0])
 
 
 ##########################################################################################################################################
@@ -1787,9 +1804,9 @@ def passLocation(training_df):
     training_df = training_df.drop(columns=['extra_point_attempt'])
     training_df = training_df.drop(columns=['extra_point_result'])
     training_df = training_df.drop(columns=['field_goal_result'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['passer_player_name'])], axis=1)
+    training_df = pd.concat([training_df, pd.get_dummies('Pass' + training_df['passer_player_name'])], axis=1)
     training_df = training_df.drop(columns=['passer_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['pass_defense_1_player_name'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies('Def' + training_df['pass_defense_1_player_name'])], axis=1)
     training_df = training_df.drop(columns=['pass_defense_1_player_name'])
     training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
                 'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
@@ -1806,43 +1823,48 @@ def passLocation(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predPassLocation(gameDF, passPlayer, defPlayer):
     pLocation = gg.copy()
-    pLocation = pLocation.loc[((pLocation.pass_defense_1_player_name == defPlayer) | (pLocation.passer_player_name == passPlayer)) & (pLocation.pass_attempt == 1)]
+    if(defPlayer != '0'):
+        pLocation = pLocation.loc[((pLocation.pass_defense_1_player_name == defPlayer) | (pLocation.passer_player_name == passPlayer)) & (pLocation.pass_attempt == 1)]
+    else:
+        pLocation = pLocation.loc[(pLocation.passer_player_name == passPlayer) & (pLocation.pass_attempt == 1) & (pLocation.pass_defense_1_player_name == defPlayer)]
+    #temp = int.loc[(int.interception == 1)]
+    #int = int.loc[(int.interception == 0)]
+    #int= int.sample(n=len(temp), random_state=1)
+    #print(len(int))
+    #print(len(temp))
+    #int = pd.concat([int, temp])
     gameDFPunteam = passLocation(gameDF)
             
     pLocation = passLocation(pLocation)
-    pLocation.to_scv('test.csv', index = False)
-    gameDFPunteam.to_scv('test2.csv', index = False)
+
     col_list = (gameDFPunteam.append([gameDFPunteam,pLocation])).columns.tolist()
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
     pLocation = pLocation.loc[:, col_list].fillna(0)
-    y = pLocation['pass_location']
     X = pLocation.drop('pass_location', axis=1)
+    y = pLocation['pass_location']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=1)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
 
     random_forest.fit(X_train, y_train)
 
     y_predict = random_forest.predict(X_test)
-    print(y_predict)
-    print("Accuracy pass_location Attempt: ")
+    #print(y_predict)
+    #print("Accuracy pass_location Attempt: ")
     ab = accuracy_score(y_test, y_predict)
 
-    print(ab)
-    print(len(pLocation.loc[pLocation.pass_location=='1']))
-    print(len(pLocation.loc[pLocation.pass_location=='0']))
+    #print(ab)
     gameDFPunteam = gameDFPunteam.drop('pass_location', axis=1)
     y_predict = random_forest.predict(gameDFPunteam)
+    print('Pass location')
     print(y_predict)
-
-    gameDF['pass_location'] = y_predict
-    return(gameDF['pass_location'])
+    return(int(y_predict[0]))
 
 ##########################################################################################################################################
 #   pass_defense_1_player_name
@@ -1918,7 +1940,7 @@ def passDefense(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predDefPlayer(gameDF, passPlayer):
@@ -1940,7 +1962,7 @@ def predDefPlayer(gameDF, passPlayer):
     random_forest.fit(X_train, y_train)
 
     y_predict = random_forest.predict(X_test)
-    print(y_predict)
+    #print(y_predict)
     print("Accuracy pass_defense_1_player_name Attempt: ")
     ab = accuracy_score(y_test, y_predict)
 
@@ -1951,7 +1973,7 @@ def predDefPlayer(gameDF, passPlayer):
     print(y_predict)
 
     gameDF['pass_defense_1_player_name'] = y_predict
-    return(gameDF['pass_defense_1_player_name'])
+    return(int(y_predict[0]))
 
 ##########################################################################################################################################
 #   Pass Player
@@ -2025,7 +2047,7 @@ def passeringp(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predPassPlayer(gameDF):
@@ -2050,7 +2072,7 @@ def predPassPlayer(gameDF):
     random_forest.fit(X_train, y_train)
 
     y_predict = random_forest.predict(X_test)
-    print(y_predict)
+    #print(y_predict)
     print("Accuracy passer_player_name Attempt: ")
     ab = accuracy_score(y_test, y_predict)
 
@@ -2060,8 +2082,7 @@ def predPassPlayer(gameDF):
     y_predict = random_forest.predict(gameDFPunteam)
     print(y_predict)
 
-    gameDF['passer_player_name'] = y_predict
-    return(gameDF['passer_player_name'])
+    return(y_predict[0])
 
 ##########################################################################################################################################
 #   Pass or Run
@@ -2135,7 +2156,7 @@ def passering(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predPassRun(gameDF):
@@ -2143,7 +2164,8 @@ def predPassRun(gameDF):
     if(gameDF['posteam_type'].iloc[0] == 'home'):
         passer = passer.loc[((passer.passer_player_name.isin(Pplayer) | (passer.rusher_player_name.isin(Pplayer))) & (passer.HCoach.isin(Pplayer))) & (passer.qtr == gameDF['qtr'].iloc[0])]
     else:
-        passer = passer.loc[((passer.passer_player_name.isin(Aplayer) | (passer.rusher_player_name.isin(Aplayer))) & (passer.HCoach.isin(Aplayer))) & (passer.qtr == gameDF['qtr'].iloc[0])]
+        print('Away PassRun')
+        passer = passer.loc[((passer.passer_player_name.isin(Aplayer) | (passer.rusher_player_name.isin(Aplayer)))) & (passer.qtr == gameDF['qtr'].iloc[0])]
     gameDFPunteam = passering(gameDF)
             
     if(len(passer.loc[passer['pass_attempt'] == 1]) > len(passer.loc[passer['rush_attempt'] == 1])):
@@ -2184,9 +2206,7 @@ def predPassRun(gameDF):
     print(len(passer.loc[(passer.pass_attempt == 1)]))
     print(len(passer.loc[(passer.pass_attempt == 0)]))
 
-    gameDF['pass_attempt'] = y_predict
-    print('PASSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS')
-    return(gameDF['pass_attempt'])
+    return(int(y_predict[0]))
 
 ##########################################################################################################################################
 #   Punt
@@ -2260,7 +2280,7 @@ def punt(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predPunt(gameDF):
@@ -2309,8 +2329,7 @@ def predPunt(gameDF):
     print(len(punt_attempt.loc[(punt_attempt.punt_attempt == 1)]))
     print(len(punt_attempt.loc[(punt_attempt.punt_attempt == 0)]))
 
-    gameDF['punt_attempt'] = y_predict
-    return(gameDF['punt_attempt'])
+    return(int(y_predict[0]))
 
 ######################################################################################################
 #
@@ -2393,7 +2412,7 @@ def clean(training_df):
     #            'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
     #            'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
     #            'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-    #            'yards_after_catch', 'yards_gained', 'duration'])
+    #            'yards_after_catch', 'aYards', 'duration'])
     training_df = training_df.drop(columns=['forced_fumble_player_1_player_id', 'forced_fumble_player_1_player_name', 'fumble_recovery_1_player_id',
                 'fumble_recovery_1_player_name', 'game_id', 'fumbled_1_player_name', 'fumbled_1_player_id', 'interception_player_id',
                 'interception_player_name', 'kicker_player_id', 'kickoff_returner_player_name', 'kickoff_returner_player_id', 'kicker_player_name',
@@ -2507,7 +2526,7 @@ def fieldGoal(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
 
 def predFieldGoal(gameDF):
@@ -2554,8 +2573,7 @@ def predFieldGoal(gameDF):
     print(len(field_goal_attempt.loc[(field_goal_attempt.field_goal_attempt == 1)]))
     print(len(field_goal_attempt.loc[(field_goal_attempt.field_goal_attempt == 0)]))
 
-    gameDF['field_goal_attempt'] = y_predict
-    return(gameDF['field_goal_attempt'])
+    return(int(y_predict[0]))
     
         
 ##########################################################################################################################################
@@ -2632,7 +2650,7 @@ def kicker(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'yards_gained', 'duration', 'attempt', 'longest'])
+                'yards_after_catch', 'duration', 'attempt', 'longest'])
     return training_df
     
 def predFGResult(gameDF):
@@ -2704,6 +2722,7 @@ def change2Home(gameDF, hInt, hIncomplete, hComplete, h3rdConvert, h3rdFail, h4t
     gameDF['totHit'] = hHit
     gameDF['totfirst_down_rush'] = hFirstRush
     gameDF['totfirst_down_pass'] = hFirstPass
+    gameDF['posteam_type'] = 'home'
     return(gameDF)
 
 def change2Away(gameDF, aInt, aIncomplete, aComplete, a3rdConvert, a3rdFail, a4thConvert, a4thFail, aPassTD, aRushTD, aFumble, aHit, aFirstPass, aFirstRush):
@@ -2721,6 +2740,7 @@ def change2Away(gameDF, aInt, aIncomplete, aComplete, a3rdConvert, a3rdFail, a4t
     gameDF['totHit'] = aHit
     gameDF['totfirst_down_rush'] = aFirstRush
     gameDF['totfirst_down_pass'] = aFirstPass
+    gameDF['posteam_type'] = 'away'
     return(gameDF)
     
 def changeDefPos(gameDF):
@@ -2869,10 +2889,11 @@ while(gameDF['qtr'].iloc[0] < 5):
         gameDF['pass_defense_1_player_name'] = predDefPlayer(gameDF, gameDF['passer_player_name'].iloc[0])
         gameDF['pass_location'] = predPassLocation(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0])
         gameDF['air_yards'] = predAirYards(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0])
-        gameDF['receiver_player_name'] = predAirYards(gameDF, gameDF['passer_player_name'].iloc[0])
+        gameDF['receiver_player_name'] = predReceiver(gameDF, gameDF['passer_player_name'].iloc[0])
         gameDF['interception'] = predInterception(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0], gameDF['receiver_player_name'].iloc[0])
         #Intercepted!
-        if(gameDF['interception'].iloc[0] == 1):
+        if(int(gameDF['interception'].iloc[0]) == 1):
+            print('Picked OFF!!!')
             gameDF['yardline_100'] = 100 - gameDF['yardline_100']
             #Change Score, Position, Timeouts, Drive
             changeDefPos(gameDF)
@@ -2892,17 +2913,20 @@ while(gameDF['qtr'].iloc[0] < 5):
                 change2Home(gameDF, hInt, hIncomplete, hComplete, h3rdConvert, h3rdFail, h4thConvert, h4thFail, hPassTD, hRushTD, hFumble, hHit, hFirstPass, hFirstRush)
             
             gameDF['down'] = 1
-            if(gameDF['yardline_100'] > 10):
+            if(int(gameDF['yardline_100']) > 10):
                 gameDF['ydstogo'] = 10
             else:
                 gameDF['ydstogo'] = gameDF['yardline_100'].iloc[0]
+            gameDF['duration'] = -25
         
         #NOT Intercepted
         else:
+            print('Not Picked!')
             #Completed?
             gameDF['complete_pass'] = predCompletion(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0], gameDF['receiver_player_name'].iloc[0])
-            if(gameDF['complete_pass'].iloc[0] == 1):
-                if(gameDF['posteam_type'] == 'home'):
+            if(int(gameDF['complete_pass'].iloc[0]) == 1):
+                print('Complete!')
+                if(gameDF['posteam_type'].iloc[0] == 'home'):
                     hComplete += 1
                     gameDF['totincomplete_pass'] = hComplete
                 else:
@@ -2912,8 +2936,9 @@ while(gameDF['qtr'].iloc[0] < 5):
                 gameDF['yards_after_catch'] = predYardsAfterCatch(gameDF, gameDF['passer_player_name'].iloc[0], gameDF['pass_defense_1_player_name'].iloc[0], gameDF['receiver_player_name'].iloc[0])
                 gameDF['duration'] = predPassDuration(gameDF, gameDF['receiver_player_name'].iloc[0])
                 #Check First Down
-                gameDF['ydstogo'] = gameDF['ydstogo'].iloc[0] - (gameDF['airYards'].iloc[0]+gameDF['yards_after_catch'].iloc[0])
+                gameDF['ydstogo'] = gameDF['ydstogo'].iloc[0] - (gameDF['air_yards'].iloc[0]+gameDF['yards_after_catch'].iloc[0])
                 if(gameDF['ydstogo'].iloc[0] <= 0):
+                    print('First Down!')
                     if(gameDF['posteam_type'].iloc[0] == 'home'):
                         if(gameDF['down'].iloc[0] == 3):
                             h3rdConvert += 1
@@ -2955,27 +2980,28 @@ while(gameDF['qtr'].iloc[0] < 5):
                         
                         
             else:
+                gameDF['duration'] = -25
                 if(gameDF['posteam_type'].iloc[0] == 'home'):
                     hIncomplete += 1
                     gameDF['totincomplete_pass'] = hIncomplete
-                    if(gameDF['down'].iloc[0] == 3):
+                    if(int(gameDF['down'].iloc[0]) == 3):
                         h3rdFail += 1
                         gameDF['totThirdDown_fail'] = h3rdFail
-                    elif(gameDF['down'].iloc[0] == 4):
+                    elif(int(gameDF['down'].iloc[0]) == 4):
                         h4thFail += 1
                         gameDF['totFourthDown_fail'] = h4thFail
                 else:
                     aIncomplete += 1
                     gameDF['totincomplete_pass'] = aIncomplete
-                    if(gameDF['down'].iloc[0] == 3):
+                    if(int(gameDF['down'].iloc[0]) == 3):
                         a3rdFail += 1
                         gameDF['totThirdDown_fail'] = a3rdFail
-                    elif(gameDF['down'].iloc[0] == 4):
+                    elif(int(gameDF['down'].iloc[0]) == 4):
                         a4thFail += 1
                         gameDF['totFourthDown_fail'] = a4thFail
                 gameDF['down'] += 1
         
-        if(gameDF['yardline_100'].iloc[0] <= 0):
+        if(int(gameDF['yardline_100'].iloc[0]) <= 0):
             #Add points for TD
             gameDF['posteam_score'] += 7
             gameDF['score_differential'] = gameDF['defteam_score'].iloc[0] - gameDF['posteam_score'].iloc[0]
@@ -2985,25 +3011,26 @@ while(gameDF['qtr'].iloc[0] < 5):
                 gameDF['total_away_score'] += 7
             gameDF['yardline_100'] = 75
             
-        #Change Score, Position, Timeouts, Drive
-        gameDF = changeDefPos(gameDF)
-            
-        #Posteam Type
-        if(gameDF['posteam_type'].iloc[0] == 'home'):
-            gameDF = change2Away(gameDF, aInt, aIncomplete, aComplete, a3rdConvert, a3rdFail, a4thConvert, a4thFail, aPassTD, aRushTD, aFumble, aHit, aFirstPass, aFirstRush)
-        else:
-            gameDF = change2Home(gameDF, hInt, hIncomplete, hComplete, h3rdConvert, h3rdFail, h4thConvert, h4thFail, hPassTD, hRushTD, hFumble, hHit, hFirstPass, hFirstRush)
-        #Reset Stuff
-        gameDF['ydstogo'] = 10
-        gameDF['down'] = 1
+        if(int(gameDF['down'].iloc[0]) == 5):
+            #Change Score, Position, Timeouts, Drive
+            gameDF = changeDefPos(gameDF)
+                
+            #Posteam Type
+            if(gameDF['posteam_type'].iloc[0] == 'home'):
+                gameDF = change2Away(gameDF, aInt, aIncomplete, aComplete, a3rdConvert, a3rdFail, a4thConvert, a4thFail, aPassTD, aRushTD, aFumble, aHit, aFirstPass, aFirstRush)
+            else:
+                gameDF = change2Home(gameDF, hInt, hIncomplete, hComplete, h3rdConvert, h3rdFail, h4thConvert, h4thFail, hPassTD, hRushTD, hFumble, hHit, hFirstPass, hFirstRush)
+            #Reset Stuff
+            gameDF['ydstogo'] = 10
+            gameDF['down'] = 1
         #Take off time
         gameDF['game_seconds_remaining'] += gameDF['duration'].iloc[0]
         gameDF['half_seconds_remaining'] += gameDF['duration'].iloc[0]
         gameDF['quarter_seconds_remaining'] += gameDF['duration'].iloc[0]
-        if(gameDF['quarter_seconds_remaining'].iloc[0] <= 0):
+        if(int(gameDF['quarter_seconds_remaining'].iloc[0]) <= 0):
             gameDF['qtr'] += 1
             gameDF['quarter_seconds_remaining'] = 900
-        if(gameDF['half_seconds_remaining'].iloc[0] <= 0):
+        if(int(gameDF['half_seconds_remaining'].iloc[0]) <= 0):
             gameDF['half_seconds_remaining'] = 1800
             gameDF['game_seconds_remaining'] = 1800
     #################################################################################################################################
@@ -3062,7 +3089,7 @@ while(gameDF['qtr'].iloc[0] < 5):
                     gameDF['totFourthDown_fail'] = a4thFail
             gameDF['down'] += 1
             
-        gameDF['yardline_100'] = gameDF['yardline_100'].iloc[0]-gameDF['yards_gained'].iloc[0]
+        gameDF['yardline_100'] = gameDF['yardline_100'].iloc[0]-gameDF['air_yards'].iloc[0]
         if(gameDF['yardline_100'].iloc[0] <= 0):
             #Add points for TD
             gameDF['posteam_score'] += 7
@@ -3125,13 +3152,16 @@ while(gameDF['qtr'].iloc[0] < 5):
     print('TIME')
     print(gameDF['quarter_seconds_remaining'].iloc[0])
     print('YARDS GAINED')
-    print(gameDF['yards_gained'].iloc[0])
+    print(gameDF['air_yards'].iloc[0])
     print('100 Yard Line')
     print(gameDF['yardline_100'].iloc[0])
     print('Duration')
     print(gameDF['duration'].iloc[0])
+    print('Air Yards')
+    print(gameDF['air_yards'].iloc[0])
+    print('Yards After Catch')
+    print(gameDF['yards_after_catch'].iloc[0])
     gameDF.to_csv('gameFinal.csv', index=False)
 
 gameDF.to_csv('gameFinal.csv', index=False)
-
 
