@@ -1152,7 +1152,7 @@ def afterCatch(training_df):
                 'rusher_player_name', 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'short', 'med', 'long', 'longest', 'attempt'])
     return training_df
     
 def predYardsAfterCatch(gameDF, passPlayer, defPlayer, receiverPlayer):
@@ -1175,19 +1175,21 @@ if(1 == 1):
             
     yards_after_catch = afterCatch(yards_after_catch)
     yards_after_catch = yards_after_catch.astype(float)
-    for col in yards_after_catch.columns:
-        if statistics.pstdev(yards_after_catch[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
-            yards_after_catch = yards_after_catch.drop(columns=[col])
-    common_cols = [col for col in set(yards_after_catch.columns).intersection(gameDFPunteam.columns)]
-    gameDFPunteam = gameDFPunteam[common_cols]
-    col_list = (gameDFPunteam.append([gameDFPunteam,yards_after_catch])).columns.tolist()
-    yards_after_catch = yards_after_catch.loc[:, col_list].fillna(0)
-    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+    yards_after_catch = gameDFPunteam.astype(float)
     yards_after_catch.append(gameDFPunteam.iloc[0])
-    gameDFPunteam.pop('duration')
+    for col in yards_after_catch.columns:
+        if statistics.pstdev(yards_after_catch[col])  <= 0.17:#0.07:#(yards_after_catch[col].mean() <= 0.01) | (yards_after_catch[col].mean() == 1):
+            yards_after_catch = yards_after_catch.drop(columns=[col])
+    #common_cols = [col for col in set(yards_after_catch.columns).intersection(gameDFPunteam.columns)]
+    #gameDFPunteam = gameDFPunteam[common_cols]
+    col_list = (gameDFPunteam.append([gameDFPunteam,yards_after_catch])).columns.tolist()
+    gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
+    yards_after_catch = yards_after_catch.loc[:, col_list].fillna(0)
+    print(yards_after_catch)
+    gameDFPunteam.pop('yards_after_catch')
             
     #print('test')
-    #print(yards_after_catch['duration'].mean())
+    #print(yards_after_catch['yards_after_catch'].mean())
 
 
     dataset = yards_after_catch.copy()
@@ -1197,12 +1199,12 @@ if(1 == 1):
     test_dataset = dataset.drop(train_dataset.index)
 
     train_stats = train_dataset.describe()
-    train_stats.pop("duration")
+    train_stats.pop("yards_after_catch")
     train_stats = train_stats.transpose()
     #print(train_stats)
 
-    train_labels = train_dataset.pop('duration')
-    test_labels = test_dataset.pop('duration')
+    train_labels = train_dataset.pop('yards_after_catch')
+    test_labels = test_dataset.pop('yards_after_catch')
 
     normed_train_data = pd.DataFrame(columns=[])
     normed_test_data = pd.DataFrame(columns=[])
@@ -3518,4 +3520,3 @@ while(gameDF['qtr'].iloc[0] < 5):
     gameDF.to_csv('gameFinal.csv', index=False)
 
 gameDF.to_csv('gameFinal.csv', index=False)
-
