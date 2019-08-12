@@ -1158,12 +1158,12 @@ def afterCatch(training_df):
 def predYardsAfterCatch(gameDF, passPlayer, defPlayer, receiverPlayer):
     print('Oof')
 if(1 == 1):
-    defPlayer = '0'
+    aYards = gg.copy()
     passPlayer = 'N.Foles'
+    defPlayer = '0'
     receiverPlayer = 'N.Agholor'
-    yards_after_catch = gg.copy()
-    yards_after_catch = yards_after_catch.loc[((yards_after_catch.pass_defense_1_player_name == defPlayer) | (yards_after_catch.passer_player_name== passPlayer) | (yards_after_catch.receiver_player_name == receiverPlayer))
-                                                    & (yards_after_catch.pass_attempt == 1) & (yards_after_catch.interception == 0)]
+    if(gameDF['posteam_type'].iloc[0] == 'home'):
+        aYards = aYards.loc[((aYards.passer_player_name == passPlayer) | (aYards.receiver_player_name == receiverPlayer) | (aYards.pass_defense_1_player_name == defPlayer))]
     #temp = int.loc[(int.interception == 1)]
     #int = int.loc[(int.interception == 0)]
     #int= int.sample(n=len(temp), random_state=1)
@@ -1171,44 +1171,44 @@ if(1 == 1):
     #print(len(temp))
     #int = pd.concat([int, temp])
         
-    gameDFPunteam = afterCatch(gameDF)
+    gameDFPunteam = rYardsGained(gameDF)
             
-    yards_after_catch = afterCatch(yards_after_catch)
-    yards_after_catch = yards_after_catch.astype(float)
-    yards_after_catch = gameDFPunteam.astype(float)
-    yards_after_catch.append(gameDFPunteam.iloc[0])
-    for col in yards_after_catch.columns:
-        if statistics.pstdev(yards_after_catch[col])  <= 0.17:#0.07:#(yards_after_catch[col].mean() <= 0.01) | (yards_after_catch[col].mean() == 1):
-            yards_after_catch = yards_after_catch.drop(columns=[col])
-    #common_cols = [col for col in set(yards_after_catch.columns).intersection(gameDFPunteam.columns)]
-    #gameDFPunteam = gameDFPunteam[common_cols]
-    col_list = (gameDFPunteam.append([gameDFPunteam,yards_after_catch])).columns.tolist()
+    aYards = rYardsGained(aYards)
+    
+    aYards = aYards.astype(float)
+    gameDFPunteam = gameDFPunteam.astype(float)
+    for col in aYards.columns:
+        if statistics.pstdev(aYards[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+            aYards = aYards.drop(columns=[col])
+    common_cols = [col for col in set(aYards.columns).intersection(gameDFPunteam.columns)]
+    gameDFPunteam = gameDFPunteam[common_cols]
+    col_list = (gameDFPunteam.append([gameDFPunteam,aYards])).columns.tolist()
+    aYards = aYards.loc[:, col_list].fillna(0)
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
-    yards_after_catch = yards_after_catch.loc[:, col_list].fillna(0)
-    print(yards_after_catch)
-    gameDFPunteam.pop('yards_after_catch')
-            
+    aYards.append(gameDFPunteam.iloc[0])
+
+    gameDFPunteam.pop("yards_gained")
     #print('test')
-    #print(yards_after_catch['yards_after_catch'].mean())
+    #print(aYards['aYards'].mean())
 
 
-    dataset = yards_after_catch.copy()
+    dataset = aYards.copy()
     dataset.tail()
 
     train_dataset = dataset.sample(frac=0.75,random_state=0)
     test_dataset = dataset.drop(train_dataset.index)
 
     train_stats = train_dataset.describe()
-    train_stats.pop("yards_after_catch")
+    train_stats.pop("yards_gained")
     train_stats = train_stats.transpose()
-    #print(train_stats)
 
-    train_labels = train_dataset.pop('yards_after_catch')
-    test_labels = test_dataset.pop('yards_after_catch')
+    train_labels = train_dataset.pop('yards_gained')
+    test_labels = test_dataset.pop('yards_gained')
+
 
     normed_train_data = pd.DataFrame(columns=[])
     normed_test_data = pd.DataFrame(columns=[])
-
+    
     for col in train_dataset.columns:
         normed_train_data[col] = (train_dataset[col] - train_dataset[col].mean()) / (train_dataset[col].max() - train_dataset[col].min())
         
@@ -1233,11 +1233,12 @@ if(1 == 1):
 
     loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=0)
 
-    #print("Testing set Mean Abs Error: {:5.2f} B".format(mae))
+    print("Testing set Mean Abs Error: {:5.2f} B".format(mae))
 
 
     test_predictions = model.predict(normed_test_data).flatten()
-    yards = model.predict(gameDFPunteam).flatten()
+    #print(test_predictions)
+    temp = model.predict(gameDFPunteam).flatten()
     #return(yards[0])
 
 
@@ -3520,3 +3521,4 @@ while(gameDF['qtr'].iloc[0] < 5):
     gameDF.to_csv('gameFinal.csv', index=False)
 
 gameDF.to_csv('gameFinal.csv', index=False)
+
