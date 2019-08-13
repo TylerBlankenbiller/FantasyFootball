@@ -319,6 +319,8 @@ def Durations(training_df):
     
 def predRunDuration(gameDF, rushPlayer):
     duration = gg.copy()
+    print('run Duration XD')
+    print(rushPlayer)
     if(gameDF['posteam_type'].iloc[0] == 'home'):
         duration = duration.loc[((duration.rusher_player_name == rushPlayer) & (duration.HOffense.isin(Pplayer))) | ((duration.ADefense.isin(Pplayer)) & (duration.Year == 2018) & (duration.rush_attempt == 1))]
     else:
@@ -329,6 +331,8 @@ def predRunDuration(gameDF, rushPlayer):
     #print(len(int))
     #print(len(temp))
     #int = pd.concat([int, temp])
+    print(len(duration))
+    print(gameDF['posteam_type'])
     gameDFPunteam = Durations(gameDF)
             
     duration = Durations(duration)
@@ -352,7 +356,7 @@ def predRunDuration(gameDF, rushPlayer):
     dataset = duration.copy()
     dataset.tail()
 
-    train_dataset = dataset.sample(frac=0.75,random_state=0)
+    train_dataset = dataset.sample(frac=0.75)
     test_dataset = dataset.drop(train_dataset.index)
 
     train_stats = train_dataset.describe()
@@ -486,6 +490,8 @@ def rYardsGained(training_df):
     
 def predRushYards(gameDF, rushPlayer):
     aYards = gg.copy()
+    print("Rusher Name")
+    print(rushPlayer)
     if(gameDF['posteam_type'].iloc[0] == 'home'):
         aYards = aYards.loc[((aYards.rusher_player_name == rushPlayer) & (aYards.HOffense.isin(Pplayer))) | ((aYards.ADefense.isin(Pplayer)) & (aYards.Year == 2018) & (aYards.rush_attempt == 1))]
     else:
@@ -497,7 +503,8 @@ def predRushYards(gameDF, rushPlayer):
     #print(len(temp))
     #int = pd.concat([int, temp])
     gameDFPunteam = rYardsGained(gameDF)
-            
+    print(len(aYards))
+    print(gameDF['posteam_type'])
     aYards = rYardsGained(aYards)
     
     aYards = aYards.astype(float)
@@ -520,7 +527,7 @@ def predRushYards(gameDF, rushPlayer):
     dataset = aYards.copy()
     dataset.tail()
 
-    train_dataset = dataset.sample(frac=0.75,random_state=0)
+    train_dataset = dataset.sample(frac=0.75)
     test_dataset = dataset.drop(train_dataset.index)
 
     train_stats = train_dataset.describe()
@@ -667,9 +674,9 @@ def predRunGap(gameDF, rushPlayer):
     X = run_gap.drop('run_gap', axis=1)
     y = run_gap['run_gap']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None)
 
     random_forest.fit(X_train, y_train)
 
@@ -782,9 +789,9 @@ def predRunLocation(gameDF, rushPlayer):
     X = run_location.drop('run_location', axis=1)
     y = run_location['run_location']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None)
 
     random_forest.fit(X_train, y_train)
 
@@ -895,9 +902,9 @@ def predRushPlayer(gameDF):
     X = rusher_player_name.drop('rusher_player_name', axis=1)
     y = rusher_player_name['rusher_player_name']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None)
 
     random_forest.fit(X_train, y_train)
 
@@ -971,11 +978,11 @@ def PDurations(training_df):
     training_df = training_df.drop(columns=['extra_point_attempt'])
     training_df = training_df.drop(columns=['extra_point_result'])
     training_df = training_df.drop(columns=['field_goal_result'])
-    training_df = pd.concat([training_df, pd.get_dummies('Pass' + training_df['passer_player_name'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies('Pass' + training_df['passer_player_name'])], axis=1)
     training_df = training_df.drop(columns=['passer_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies('Rec' + training_df['receiver_player_name'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies('Rec' + training_df['receiver_player_name'])], axis=1)
     training_df = training_df.drop(columns=['receiver_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies('Defense' + training_df['pass_defense_1_player_name'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies('Defense' + training_df['pass_defense_1_player_name'])], axis=1)
     training_df = training_df.drop(columns=['pass_defense_1_player_name'])
     training_df = training_df.drop(columns=['first_down_pass', 'first_down_rush', 'forced_fumble_player_1_player_id',
                 'forced_fumble_player_1_player_name', 'fourth_down_converted', 'fourth_down_failed', 'fumble',
@@ -1024,7 +1031,7 @@ def predPassDuration(gameDF, receiverPlayer):
     dataset = passDuration.copy()
     dataset.tail()
 
-    train_dataset = dataset.sample(frac=0.75,random_state=0)
+    train_dataset = dataset.sample(frac=0.75)
     test_dataset = dataset.drop(train_dataset.index)
 
     train_stats = train_dataset.describe()
@@ -1131,9 +1138,9 @@ def afterCatch(training_df):
     training_df = training_df.drop(columns=['extra_point_attempt'])
     training_df = training_df.drop(columns=['extra_point_result'])
     training_df = training_df.drop(columns=['field_goal_result'])
-    training_df = pd.concat([training_df, pd.get_dummies('Pass' + training_df['passer_player_name'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies('Pass' + training_df['passer_player_name'])], axis=1)
     training_df = training_df.drop(columns=['passer_player_name'])
-    training_df = pd.concat([training_df, pd.get_dummies('Rec' + training_df['receiver_player_name'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies('Rec' + training_df['receiver_player_name'])], axis=1)
     training_df = training_df.drop(columns=['receiver_player_name'])
     #training_df = pd.concat([training_df, pd.get_dummies('Defense' + training_df['pass_defense_1_player_name'])], axis=1)
     training_df = training_df.drop(columns=['pass_defense_1_player_name'])
@@ -1156,14 +1163,12 @@ def afterCatch(training_df):
     return training_df
     
 def predYardsAfterCatch(gameDF, passPlayer, defPlayer, receiverPlayer):
-    print('Oof')
-if(1 == 1):
     aYards = gg.copy()
     passPlayer = 'N.Foles'
     defPlayer = '0'
     receiverPlayer = 'N.Agholor'
     if(gameDF['posteam_type'].iloc[0] == 'home'):
-        aYards = aYards.loc[((aYards.passer_player_name == passPlayer) | (aYards.receiver_player_name == receiverPlayer) | (aYards.pass_defense_1_player_name == defPlayer))]
+        aYards = aYards.loc[((aYards.passer_player_name == passPlayer) | (aYards.receiver_player_name == receiverPlayer) | (aYards.pass_defense_1_player_name == defPlayer)) & (aYards.pass_attempt == 1)]
     #temp = int.loc[(int.interception == 1)]
     #int = int.loc[(int.interception == 0)]
     #int= int.sample(n=len(temp), random_state=1)
@@ -1171,9 +1176,9 @@ if(1 == 1):
     #print(len(temp))
     #int = pd.concat([int, temp])
         
-    gameDFPunteam = rYardsGained(gameDF)
+    gameDFPunteam = afterCatch(gameDF)
             
-    aYards = rYardsGained(aYards)
+    aYards = afterCatch(aYards)
     
     aYards = aYards.astype(float)
     gameDFPunteam = gameDFPunteam.astype(float)
@@ -1195,7 +1200,7 @@ if(1 == 1):
     dataset = aYards.copy()
     dataset.tail()
 
-    train_dataset = dataset.sample(frac=0.75,random_state=0)
+    train_dataset = dataset.sample(frac=0.75)
     test_dataset = dataset.drop(train_dataset.index)
 
     train_stats = train_dataset.describe()
@@ -1239,7 +1244,7 @@ if(1 == 1):
     test_predictions = model.predict(normed_test_data).flatten()
     #print(test_predictions)
     temp = model.predict(gameDFPunteam).flatten()
-    #return(yards[0])
+    return(temp[0])
 
 
 ##########################################################################################################################################
@@ -1345,9 +1350,9 @@ def predCompletion(gameDF, passPlayer, defPlayer, receiverPlayer):
     X = complete.drop('complete_pass', axis=1)
     y = complete['complete_pass']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None)
 
     random_forest.fit(X_train, y_train)
 
@@ -1465,9 +1470,9 @@ def predInterception(gameDF, passPlayer, defPlayer, receiverPlayer):
     X = int.drop('interception', axis=1)
     y = int['interception']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None)
 
     random_forest.fit(X_train, y_train)
 
@@ -1581,9 +1586,9 @@ def predReceiver(gameDF, passPlayer):
     X = receiver_player_name.drop('receiver_player_name', axis=1)
     y = receiver_player_name['receiver_player_name']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=1)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None)
 
     random_forest.fit(X_train, y_train)
 
@@ -1706,7 +1711,7 @@ def predAirYards(gameDF, passPlayer, defPlayer):
     dataset = aYards.copy()
     dataset.tail()
 
-    train_dataset = dataset.sample(frac=0.75,random_state=0)
+    train_dataset = dataset.sample(frac=0.75)
     test_dataset = dataset.drop(train_dataset.index)
 
     train_stats = train_dataset.describe()
@@ -1856,9 +1861,9 @@ def predPassLocation(gameDF, passPlayer, defPlayer):
     X = pLocation.drop('pass_location', axis=1)
     y = pLocation['pass_location']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=7)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None)
 
     random_forest.fit(X_train, y_train)
 
@@ -1963,9 +1968,9 @@ def predDefPlayer(gameDF, passPlayer):
     X = pDefense.drop('pass_defense_1_player_name', axis=1)
     y = pDefense['pass_defense_1_player_name']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=1)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None)
 
     random_forest.fit(X_train, y_train)
 
@@ -2073,9 +2078,9 @@ def predPassPlayer(gameDF):
     y = passer['passer_player_name']
     X = passer.drop('passer_player_name', axis=1)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=1)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None)
 
     random_forest.fit(X_train, y_train)
 
@@ -2194,9 +2199,9 @@ def predPassRun(gameDF):
     X = passer.drop('pass_attempt', axis=1)
     y = passer['pass_attempt']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=1)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=None)
 
     random_forest.fit(X_train, y_train)
 
@@ -2317,9 +2322,9 @@ def predPunt(gameDF):
     X = punt_attempt.drop('punt_attempt', axis=1)
     y = punt_attempt['punt_attempt']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=1000, random_state=1)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=1000)
 
     random_forest.fit(X_train, y_train)
 
@@ -2442,9 +2447,9 @@ timeout = timeout.loc[:, col_list].fillna(0)
 X = timeout.drop('timeout', axis=1)
 y = timeout['timeout']
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-random_forest = RandomForestClassifier(n_estimators=100, max_depth=1000, random_state=1)
+random_forest = RandomForestClassifier(n_estimators=100, max_depth=1000)
 
 random_forest.fit(X_train, y_train)
 
@@ -2561,9 +2566,9 @@ def predFieldGoal(gameDF):
     X = field_goal_attempt.drop('field_goal_attempt', axis=1)
     y = field_goal_attempt['field_goal_attempt']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=100, max_depth=1000, random_state=1)
+    random_forest = RandomForestClassifier(n_estimators=100, max_depth=1000)
 
     random_forest.fit(X_train, y_train)
 
@@ -2691,9 +2696,9 @@ def predFGResult(gameDF):
     X = field_goal_result.drop('field_goal_result', axis=1)
     y = field_goal_result['field_goal_result']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    random_forest = RandomForestClassifier(n_estimators=20, max_depth=None, random_state=1)
+    random_forest = RandomForestClassifier(n_estimators=20, max_depth=None)
 
     random_forest.fit(X_train, y_train)
 
@@ -3521,4 +3526,3 @@ while(gameDF['qtr'].iloc[0] < 5):
     gameDF.to_csv('gameFinal.csv', index=False)
 
 gameDF.to_csv('gameFinal.csv', index=False)
-
