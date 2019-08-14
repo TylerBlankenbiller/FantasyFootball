@@ -3489,7 +3489,7 @@ while(gameDF['qtr'].iloc[0] < 5):
         
         #Change Score, Position, Timeouts, Drive
         #Posteam Type
-        if(gameDF['posteam_type'] == 'home'):
+        if(gameDF['posteam_type'].iloc[0] == 'home'):
             gameDF['posteam_type'] = 'away'####################################################################################
             gameDF['totinterception'] = aInt
             gameDF['totincomplete_pass'] = aIncomplete
@@ -3578,7 +3578,7 @@ while(gameDF['qtr'].iloc[0] < 5):
         
         #Change Score, Position, Timeouts, Drive
         #Posteam Type
-        if(gameDF['posteam_type'] == 'home'):
+        if(gameDF['posteam_type'].iloc[0] == 'home'):
             gameDF['posteam_type'] = 'away'####################################################################################
             gameDF['totinterception'] = aInt
             gameDF['totincomplete_pass'] = aIncomplete
