@@ -324,9 +324,9 @@ def predRunDuration(gameDF, rushPlayer):
     print('run Duration XD')
     print(rushPlayer)
     if(gameDF['posteam_type'].iloc[0] == 'home'):
-        duration = duration.loc[((duration.rusher_player_name == rushPlayer) & (duration.HOffense.isin(Pplayer))) | ((duration.ADefense.isin(Pplayer)) & (duration.Year == 2018) & (duration.rush_attempt == 1))]
+        duration = duration.loc[((duration.rusher_player_name == rushPlayer)) | ((duration.ADefense.isin(Pplayer)) & (duration.Year == 2018) & (duration.rush_attempt == 1))]
     else:
-        duration = duration.loc[((duration.rusher_player_name == rushPlayer) & (duration.AOffense.isin(Pplayer))) | ((duration.HDefense.isin(Pplayer)) & (duration.Year == 2018) & (duration.rush_attempt == 1))]
+        duration = duration.loc[((duration.rusher_player_name == rushPlayer)) | ((duration.HDefense.isin(Aplayer)) & (duration.Year == 2018) & (duration.rush_attempt == 1))]
     #temp = int.loc[(int.interception == 1)]
     #int = int.loc[(int.interception == 0)]
     #int= int.sample(n=len(temp), random_state=1)
@@ -495,9 +495,12 @@ def predRushYards(gameDF, rushPlayer):
     print("Rusher Name")
     print(rushPlayer)
     if(gameDF['posteam_type'].iloc[0] == 'home'):
-        aYards = aYards.loc[((aYards.rusher_player_name == rushPlayer) & (aYards.HOffense.isin(Pplayer))) | ((aYards.ADefense.isin(Pplayer)) & (aYards.Year == 2018) & (aYards.rush_attempt == 1))]
+        aYards = aYards.loc[((aYards.rusher_player_name == rushPlayer)) | ((aYards.ADefense.isin(Aplayer)) & (aYards.Year == 2018) & (aYards.rush_attempt == 1))]
     else:
-        aYards = aYards.loc[((aYards.rusher_player_name == rushPlayer) & (aYards.AOffense.isin(Pplayer))) | ((aYards.HDefense.isin(Pplayer)) & (aYards.Year == 2018) & (aYards.rush_attempt == 1))]
+        aYards = aYards.loc[((aYards.rusher_player_name == rushPlayer)) | ((aYards.HDefense.isin(Pplayer)) & (aYards.Year == 2018) & (aYards.rush_attempt == 1))]# & (aYards.AOffense.isin(Aplayer)))]# | ((aYards.HDefense.isin(Pplayer)) & (aYards.Year == 2018) & (aYards.rush_attempt == 1))]
+    print(len(aYards))
+    print(gameDF['posteam_type'])
+    print('My thing')
     #temp = int.loc[(int.interception == 1)]
     #int = int.loc[(int.interception == 0)]
     #int= int.sample(n=len(temp), random_state=1)
@@ -2723,6 +2726,7 @@ def predFGResult(gameDF):
     return(gameDF['field_goal_result'])
 
     
+justScored = 0
 hHit = 0
 aHit = 0
 hFirstRush = 0
@@ -2817,6 +2821,11 @@ while(gameDF['qtr'].iloc[0] < 5):
             temp = gameDF['posteam'].iloc[0]
             gameDF['posteam'] = gameDF['defteam'].iloc[0]
             gameDF['defteam'] = temp
+            
+            print("Change")
+            print(gameDF['posteam'].iloc[0])
+            print(gameDF['defteam'].iloc[0])
+            print(temp)
                 
             #Timeouts
             temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -2852,6 +2861,11 @@ while(gameDF['qtr'].iloc[0] < 5):
             temp = gameDF['posteam'].iloc[0]
             gameDF['posteam'] = gameDF['defteam'].iloc[0]
             gameDF['defteam'] = temp
+            
+            print("Change")
+            print(gameDF['posteam'].iloc[0])
+            print(gameDF['defteam'].iloc[0])
+            print(temp)
                 
             #Timeouts
             temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -2883,7 +2897,7 @@ while(gameDF['qtr'].iloc[0] < 5):
     #################################################################################################################################
     elif(int(gameDF['punt_attempt'].iloc[0]) == 1):
         print('PUNT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-        gameDF['yardline_100'] = 100-(gameDF['yardline_100']+47)
+        gameDF['yardline_100'] = 100-(gameDF['yardline_100']-44)
         if(gameDF['yardline_100'].iloc[0] <= 0):
             gameDF['yardline_100'] = 80
             
@@ -2915,6 +2929,11 @@ while(gameDF['qtr'].iloc[0] < 5):
             temp = gameDF['posteam'].iloc[0]
             gameDF['posteam'] = gameDF['defteam'].iloc[0]
             gameDF['defteam'] = temp
+            
+            print("Change")
+            print(gameDF['posteam'].iloc[0])
+            print(gameDF['defteam'].iloc[0])
+            print(temp)
                 
             #Timeouts
             temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -2950,6 +2969,11 @@ while(gameDF['qtr'].iloc[0] < 5):
             temp = gameDF['posteam'].iloc[0]
             gameDF['posteam'] = gameDF['defteam'].iloc[0]
             gameDF['defteam'] = temp
+            
+            print("Change")
+            print(gameDF['posteam'].iloc[0])
+            print(gameDF['defteam'].iloc[0])
+            print(temp)
                 
             #Timeouts
             temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -3027,6 +3051,11 @@ while(gameDF['qtr'].iloc[0] < 5):
                 temp = gameDF['posteam']
                 gameDF['posteam'] = gameDF['defteam']
                 gameDF['defteam'] = temp
+                
+                print("Change")
+                print(gameDF['posteam'].iloc[0])
+                print(gameDF['defteam'].iloc[0])
+                print(temp)
                     
                 #Timeouts
                 temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -3066,6 +3095,11 @@ while(gameDF['qtr'].iloc[0] < 5):
                 temp = gameDF['posteam']
                 gameDF['posteam'] = gameDF['defteam']
                 gameDF['defteam'] = temp
+                
+                print("Change")
+                print(gameDF['posteam'].iloc[0])
+                print(gameDF['defteam'].iloc[0])
+                print(temp)
                     
                 #Timeouts
                 temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -3102,6 +3136,8 @@ while(gameDF['qtr'].iloc[0] < 5):
                 gameDF['duration'] = predPassDuration(gameDF, gameDF['receiver_player_name'].iloc[0])
                 #Check First Down
                 gameDF['ydstogo'] = gameDF['ydstogo'].iloc[0] - (gameDF['air_yards'].iloc[0]+gameDF['yards_after_catch'].iloc[0])
+                gameDF['yardline_100'] = gameDF['yardline_100'].iloc[0] - (gameDF['air_yards'].iloc[0]+gameDF['yards_after_catch'].iloc[0])
+                
                 if(gameDF['ydstogo'].iloc[0] <= 0):
                     print('First Down!')
                     if(gameDF['posteam_type'].iloc[0] == 'home'):
@@ -3167,10 +3203,11 @@ while(gameDF['qtr'].iloc[0] < 5):
                 gameDF['down'] += 1
         
         if(int(gameDF['yardline_100'].iloc[0]) <= 0):
+            justScored = 1
             #Add points for TD
             gameDF['posteam_score'] += 7
             gameDF['score_differential'] = gameDF['defteam_score'].iloc[0] - gameDF['posteam_score'].iloc[0]
-            if(gameDF['posteam_type'] == 'home'):
+            if(gameDF['posteam_type'].iloc[0] == 'home'):
                 gameDF['total_home_score'] += 7
             else:
                 gameDF['total_away_score'] += 7
@@ -3206,6 +3243,11 @@ while(gameDF['qtr'].iloc[0] < 5):
                 temp = gameDF['posteam'].iloc[0]
                 gameDF['posteam'] = gameDF['defteam'].iloc[0]
                 gameDF['defteam'] = temp
+                
+                print("Change")
+                print(gameDF['posteam'].iloc[0])
+                print(gameDF['defteam'].iloc[0])
+                print(temp)
                     
                 #Timeouts
                 temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -3241,6 +3283,11 @@ while(gameDF['qtr'].iloc[0] < 5):
                 temp = gameDF['posteam'].iloc[0]
                 gameDF['posteam'] = gameDF['defteam'].iloc[0]
                 gameDF['defteam'] = temp
+                
+                print("Change")
+                print(gameDF['posteam'].iloc[0])
+                print(gameDF['defteam'].iloc[0])
+                print(temp)
                     
                 #Timeouts
                 temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -3278,7 +3325,8 @@ while(gameDF['qtr'].iloc[0] < 5):
         gameDF['run_location'] = predRunLocation(gameDF, gameDF['rusher_player_name'].iloc[0])
         gameDF['run_gap'] = predRunGap(gameDF, gameDF['rusher_player_name'].iloc[0])
         gameDF['yards_gained'] = predRushYards(gameDF, gameDF['rusher_player_name'].iloc[0])
-        gameDF['duration'] = predRunDuration(gameDF, gameDF['rusher_player_name'].iloc[0])
+        #gameDF['duration'] = predRunDuration(gameDF, gameDF['rusher_player_name'].iloc[0])
+        gameDF['duration'] = -30
         #Check First Down
         gameDF['ydstogo'] = gameDF['ydstogo'].iloc[0] - (gameDF['yards_gained'].iloc[0])
         if(gameDF['ydstogo'].iloc[0] <= 0):
@@ -3324,6 +3372,7 @@ while(gameDF['qtr'].iloc[0] < 5):
             
         gameDF['yardline_100'] = gameDF['yardline_100'].iloc[0]-gameDF['yards_gained'].iloc[0]
         if(gameDF['yardline_100'].iloc[0] <= 0):
+            justScored = 1
             #Add points for TD
             gameDF['posteam_score'] += 7
             gameDF['score_differential'] = gameDF['defteam_score'].iloc[0] - gameDF['posteam_score'].iloc[0]
@@ -3361,6 +3410,10 @@ while(gameDF['qtr'].iloc[0] < 5):
                 temp = gameDF['posteam'].iloc[0]
                 gameDF['posteam'] = gameDF['defteam'].iloc[0]
                 gameDF['defteam'] = temp
+                print("Change")
+                print(gameDF['posteam'].iloc[0])
+                print(gameDF['defteam'].iloc[0])
+                print(temp)
                     
                 #Timeouts
                 temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -3396,6 +3449,11 @@ while(gameDF['qtr'].iloc[0] < 5):
                 temp = gameDF['posteam'].iloc[0]
                 gameDF['posteam'] = gameDF['defteam'].iloc[0]
                 gameDF['defteam'] = temp
+                
+                print("Change")
+                print(gameDF['posteam'].iloc[0])
+                print(gameDF['defteam'].iloc[0])
+                print(temp)
                     
                 #Timeouts
                 temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -3457,6 +3515,11 @@ while(gameDF['qtr'].iloc[0] < 5):
             temp = gameDF['posteam'].iloc[0]
             gameDF['posteam'] = gameDF['defteam'].iloc[0]
             gameDF['defteam'] = temp
+            
+            print("Change")
+            print(gameDF['posteam'].iloc[0])
+            print(gameDF['defteam'].iloc[0])
+            print(temp)
                 
             #Timeouts
             temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -3492,6 +3555,11 @@ while(gameDF['qtr'].iloc[0] < 5):
             temp = gameDF['posteam'].iloc[0]
             gameDF['posteam'] = gameDF['defteam'].iloc[0]
             gameDF['defteam'] = temp
+            
+            print("Change")
+            print(gameDF['posteam'].iloc[0])
+            print(gameDF['defteam'].iloc[0])
+            print(temp)
                 
             #Timeouts
             temp = gameDF['posteam_timeouts_remaining'].iloc[0]
@@ -3502,6 +3570,98 @@ while(gameDF['qtr'].iloc[0] < 5):
                 
             #Drive
             gameDF['drive'] += 1#####################################################################################################
+    ####################################################################################################################################
+    #   Check if Just Scored a TD by Throw OR Run
+    ####################################################################################################################################
+    if(justScored == 1):
+        gameDF['yardline_100'] = 75
+        
+        #Change Score, Position, Timeouts, Drive
+        #Posteam Type
+        if(gameDF['posteam_type'] == 'home'):
+            gameDF['posteam_type'] = 'away'####################################################################################
+            gameDF['totinterception'] = aInt
+            gameDF['totincomplete_pass'] = aIncomplete
+            gameDF['totcomplete_pass'] = aComplete
+            gameDF['totThirdDown_convert'] = a3rdConvert
+            gameDF['totThirdDown_fail'] = a3rdFail
+            gameDF['totFourthDown_convert'] = a4thConvert
+            gameDF['totFourthDown_fail'] = a4thFail
+            gameDF['totPass_TD'] = aPassTD
+            gameDF['totRush_TD'] = aRushTD
+            gameDF['totfumble'] = aFumble
+            gameDF['totHit'] = aHit
+            gameDF['totfirst_down_rush'] = aFirstRush
+            gameDF['totfirst_down_pass'] = aFirstPass
+            gameDF['posteam_type'] = 'away'
+            #Change teams (Punt)
+            #Score
+            temp = gameDF['posteam_score'].iloc[0]
+            gameDF['posteam_score'] = gameDF['defteam_score'].iloc[0]
+            gameDF['defteam_score'] = temp
+                
+            #Possession
+            temp = gameDF['posteam'].iloc[0]
+            gameDF['posteam'] = gameDF['defteam'].iloc[0]
+            gameDF['defteam'] = temp
+            
+            print("Change")
+            print(gameDF['posteam'].iloc[0])
+            print(gameDF['defteam'].iloc[0])
+            print(temp)
+                
+            #Timeouts
+            temp = gameDF['posteam_timeouts_remaining'].iloc[0]
+            gameDF['posteam_timeouts_remaining'] = gameDF['defteam_timeouts_remaining'].iloc[0]
+            gameDF['defteam_timeouts_remaining'] = temp
+            
+            gameDF['score_differential'] = gameDF['defteam_score'].iloc[0] - gameDF['posteam_score'].iloc[0]
+                
+            #Drive
+            gameDF['drive'] += 1#############################################################################################
+        else:
+            gameDF['posteam_type'] = 'home'###################################################################################
+            gameDF['totinterception'] = hInt
+            gameDF['totincomplete_pass'] = hIncomplete
+            gameDF['totcomplete_pass'] = hComplete
+            gameDF['totThirdDown_convert'] = h3rdConvert
+            gameDF['totThirdDown_fail'] = h3rdFail
+            gameDF['totFourthDown_convert'] = h4thConvert
+            gameDF['totFourthDown_fail'] = h4thFail
+            gameDF['totPass_TD'] = hPassTD
+            gameDF['totRush_TD'] = hRushTD
+            gameDF['totfumble'] = hFumble
+            gameDF['totHit'] = hHit
+            gameDF['totfirst_down_rush'] = hFirstRush
+            gameDF['totfirst_down_pass'] = hFirstPass
+            gameDF['posteam_type'] = 'home'
+            #Score
+            temp = gameDF['posteam_score'].iloc[0]
+            gameDF['posteam_score'] = gameDF['defteam_score'].iloc[0]
+            gameDF['defteam_score'] = temp
+                
+            #Possession
+            temp = gameDF['posteam'].iloc[0]
+            gameDF['posteam'] = gameDF['defteam'].iloc[0]
+            gameDF['defteam'] = temp
+            
+            print("Change")
+            print(gameDF['posteam'].iloc[0])
+            print(gameDF['defteam'].iloc[0])
+            print(temp)
+                
+            #Timeouts
+            temp = gameDF['posteam_timeouts_remaining'].iloc[0]
+            gameDF['posteam_timeouts_remaining'] = gameDF['defteam_timeouts_remaining'].iloc[0]
+            gameDF['defteam_timeouts_remaining'] = temp
+            
+            gameDF['score_differential'] = gameDF['defteam_score'] - gameDF['posteam_score'].iloc[0]
+                
+            #Drive
+            gameDF['drive'] += 1#####################################################################################################
+
+
+    
     print('POSTEAM')
     print(gameDF['posteam'].iloc[0])
     print('DOWN')
