@@ -1,3 +1,5 @@
+#Yards gained Run Away
+
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import pathlib
@@ -1013,6 +1015,7 @@ def predPassDuration(gameDF, receiverPlayer):
             
     passDuration = PDurations(passDuration)
     passDuration = passDuration.astype(float)
+    gameDFPunteam = gameDFPunteam.astype(float)
     for col in passDuration.columns:
         if statistics.pstdev(passDuration[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
             passDuration = passDuration.drop(columns=[col])
