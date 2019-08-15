@@ -440,15 +440,15 @@ def rYardsGained(training_df):
     training_df.loc[training_df.WTemp=='39/53', 'WTemp']='46'
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['AOffense'])], axis=1)
     training_df = training_df.drop(columns=['AOffense'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['ADefense'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['ADefense'])], axis=1)
     training_df = training_df.drop(columns=['ADefense'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['ACoach'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['ACoach'])], axis=1)
     training_df = training_df.drop(columns=['ACoach'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['HOffense'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['HOffense'])], axis=1)
     training_df = training_df.drop(columns=['HOffense'])
     #training_df = pd.concat([training_df, pd.get_dummies(training_df['HDefense'])], axis=1)
     training_df = training_df.drop(columns=['HDefense'])
-    training_df = pd.concat([training_df, pd.get_dummies(training_df['HCoach'])], axis=1)
+    #training_df = pd.concat([training_df, pd.get_dummies(training_df['HCoach'])], axis=1)
     training_df = training_df.drop(columns=['HCoach'])
     training_df = pd.concat([training_df, pd.get_dummies(training_df['WDirection'])], axis=1)
     training_df = training_df.drop(columns=['WDirection'])
@@ -487,7 +487,7 @@ def rYardsGained(training_df):
                 'sack', 'safety', 'solo_tackle_1_player_id', 'solo_tackle_1_player_name',
                 'tackle_for_loss_1_player_id', 'tackle_for_loss_1_player_name', 'third_down_converted',
                 'third_down_failed', 'timeout_team', 'touchback', 'two_point_attempt', 'two_point_conv_result',
-                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt'])
+                'yards_after_catch', 'duration', 'short', 'med', 'long', 'longest', 'attempt', 'field_goal_attempt', 'pass_attempt', 'punt_attempt'])
     return training_df
     
 def predRushYards(gameDF, rushPlayer):
@@ -512,17 +512,28 @@ def predRushYards(gameDF, rushPlayer):
     print(gameDF['posteam_type'])
     aYards = rYardsGained(aYards)
     
+    aYards = aYards.fillna(0)
+    gameDFPunteam = gameDFPunteam.fillna(0)
+    
     aYards = aYards.astype(float)
     gameDFPunteam = gameDFPunteam.astype(float)
     for col in aYards.columns:
-        if statistics.pstdev(aYards[col])  <= 0.17:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
+        if statistics.pstdev(aYards[col])  <= 0.2:#0.07:#(aYards[col].mean() <= 0.01) | (aYards[col].mean() == 1):
             aYards = aYards.drop(columns=[col])
-    common_cols = [col for col in set(aYards.columns).intersection(gameDFPunteam.columns)]
-    gameDFPunteam = gameDFPunteam[common_cols]
+        elif aYards[col].iloc[0] == '':
+            aYards = aYards.drop(columns=[col])
+    #common_cols = [col for col in set(aYards.columns).intersection(gameDFPunteam.columns)]
+    #gameDFPunteam = gameDFPunteam[common_cols]
+    aYards.append(gameDFPunteam.iloc[0])
+    
     col_list = (gameDFPunteam.append([gameDFPunteam,aYards])).columns.tolist()
     aYards = aYards.loc[:, col_list].fillna(0)
     gameDFPunteam = gameDFPunteam.loc[:, col_list].fillna(0)
-    aYards.append(gameDFPunteam.iloc[0])
+    
+    aYards = aYards.dropna(how='any') 
+    
+    aYards.to_csv('train.csv', index=False)
+    aYards.to_csv('testData.csv', index=False)
 
     gameDFPunteam.pop("yards_gained")
     #print('test')
@@ -574,6 +585,8 @@ def predRushYards(gameDF, rushPlayer):
 
 
     test_predictions = model.predict(normed_test_data).flatten()
+    print('Test Predictions')
+    print(test_predictions)
     #print(test_predictions)
     temp = model.predict(gameDFPunteam).flatten()
     return(temp[0])
